@@ -40,7 +40,7 @@
 #'
 #' @export
 
-data_homogonization <- function(directoryName, temporaryDirectory) {
+data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # CHECK FOR REQUISITE PARAMETERS
 
@@ -60,21 +60,21 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
   # a user-identified temporaryDirectory is required
 
   # ensure the provided temporaryDirectory has a trailing slash
-  os <- detect_os()
+  # os <- detect_os()
 
-  if (os %in% c('lin', 'mac')) {
+  # if (os %in% c('lin', 'mac')) {
 
     if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
       temporaryDirectory <- paste0(temporaryDirectory, "/")
     }
 
-  } else if (os == 'win') {
-
-    if (stringr::str_extract(temporaryDirectory, ".$") != "\\") {
-      temporaryDirectory <- paste0(temporaryDirectory, "\\")
-    }
-
-  }
+  # } else if (os == 'win') {
+  #
+  #   if (stringr::str_extract(temporaryDirectory, ".$") != "\\") {
+  #     temporaryDirectory <- paste0(temporaryDirectory, "\\")
+  #   }
+  #
+  # }
 
   # create the receiving directory if it does not exist; delete the contents if
   # it does exist
@@ -215,7 +215,8 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
   names(googleDirData) <- dirFileNames
 
   # as key file is already loaded, remove it from the list of data frames
-  googleDirData <- googleDirData[-grepl("key", names(googleDirData), ignore.case = T)]
+  # googleDirData <- googleDirData[-grepl("key", names(googleDirData), ignore.case = T)]
+  googleDirData <- googleDirData[!grepl("key", names(googleDirData), ignore.case = T)]
 
   # generate a vector of dataframe columns to keep from key file input to
   # header_name
