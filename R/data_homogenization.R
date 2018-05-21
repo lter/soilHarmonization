@@ -21,7 +21,7 @@
 #' @import dplyr
 #' @import tidyr
 #' @import readr
-#' @import magrittr
+#' @import tibble
 #' @import googledrive
 #' @import googlesheets
 #' @import tools
@@ -92,15 +92,15 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
 
   # access Google directory id for reference
   googleID <- googledrive::drive_get(directoryName) %>%
-    pull(id)
+    dplyr::pull(id)
 
   # list files in Google directory
   dirFileList <- googledrive::drive_ls(path = directoryName)
 
   # isolate names from Google directory
   dirFileNames <- dirFileList %>%
-    select(name) %>%
-    pull(name)
+    dplyr::select(name) %>%
+    dplyr::pull(name)
 
 
   # ACCESS KEY FILE
@@ -110,11 +110,11 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
   keyFileToken <- googlesheets::gs_title(keyFileName)
 
   locationData <- googlesheets::gs_read(keyFileToken, ws = 1) %>%
-    filter(!is.na(Value)) %>%
-    add_row(Value = googleID, var = 'google_id', .before = 1)
+    dplyr::filter(!is.na(Value)) %>%
+    tibble::add_row(Value = googleID, var = 'google_id', .before = 1)
 
   profileData <- googlesheets::gs_read(keyFileToken, ws = 2) %>%
-    filter(!is.na(header_name))
+    dplyr::filter(!is.na(header_name))
 
 
   # GENERATE NOTE FILE (FROM THE KEY FILE)
@@ -123,16 +123,16 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
   notesFileName <- paste0(tools::file_path_sans_ext(keyFileName), "_HMGZD_NOTES.csv")
 
   # capture notes from location and profile key-file tabs
-  notes <- bind_rows(
+  notes <- dplyr::bind_rows(
     locationData %>%
-      filter(!is.na(var_notes)) %>%
-      mutate(source = "location") %>%
-      select(source, Var_long, var, var_notes),
+      dplyr::filter(!is.na(var_notes)) %>%
+      dplyr::mutate(source = "location") %>%
+      dplyr::select(source, Var_long, var, var_notes),
     profileData %>%
-      filter(!is.na(Notes) | !is.na(Comment)) %>%
+      dplyr::filter(!is.na(Notes) | !is.na(Comment)) %>%
       tidyr::unite(col = var_notes, Notes, Comment, sep = ";") %>%
-      mutate(source = "profile") %>%
-      select(source, Var_long, var, var_notes)
+      dplyr::mutate(source = "profile") %>%
+      dplyr::select(source, Var_long, var, var_notes)
   )
 
 
@@ -142,14 +142,14 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
 
   # location tab DATA containing units only
   locationDataUnits <- locationData %>%
-    filter(!is.na(Unit)) %>%
-    select(Value, unit_levels = Unit, Var_long, var)
+    dplyr::filter(!is.na(Unit)) %>%
+    dplyr::select(Value, unit_levels = Unit, Var_long, var)
 
   # join location DATA with units and corresponding vars in conversion table
-  LDU_UCL <- left_join(locationDataUnits, unitsConversionLocation,
-                       by = c("var", "unit_levels"),
-                       suffix = c(".PD", ".UT")) %>%
-    filter(
+  LDU_UCL <- dplyr::left_join(locationDataUnits, unitsConversionLocation,
+                              by = c("var", "unit_levels"),
+                              suffix = c(".PD", ".UT")) %>%
+    dplyr::filter(
       !is.na(unitConversionFactor),
       unitConversionFactor != 1
     )
@@ -163,14 +163,14 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
     # add mention of conversions to notes
     if (nrow(notes[notes$var == varValue,]) >= 1) {
       notes <- notes %>%
-        mutate(var_notes = replace(var_notes,
-                                   var == varValue,
-                                   paste0(var_notes, "; UNITS CONVERSION APPLIED: ", LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor'])))
+        dplyr::mutate(var_notes = replace(var_notes,
+                                          var == varValue,
+                                          paste0(var_notes, "; UNITS CONVERSION APPLIED: ", LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor'])))
     } else {
       notes <- notes %>%
-        add_row(source = 'location',
-                var = varValue,
-                var_notes = paste0("UNITS CONVERSION APPLIED: ", LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor']))
+        tibble::add_row(source = 'location',
+                        var = varValue,
+                        var_notes = paste0("UNITS CONVERSION APPLIED: ", LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor']))
     }
   }
 
@@ -220,8 +220,8 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
   # generate a vector of dataframe columns to keep from key file input to
   # header_name
   varsToKeep <- profileData %>%
-    select(header_name) %>%
-    pull()
+    dplyr::select(header_name) %>%
+    dplyr::pull()
 
   # pull targeted vars from each data frame based on header_names in key file
   googleDirData <- purrr::map(googleDirData, select, one_of(varsToKeep))
@@ -237,14 +237,14 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
 
   # profile tab DATA containing units only
   profileDataUnits <- profileData %>%
-    filter(!is.na(unit_levels)) %>%
-    select(header_name, unit_levels, Var_long, var)
+    dplyr::filter(!is.na(unit_levels)) %>%
+    dplyr::select(header_name, unit_levels, Var_long, var)
 
   # join profile DATA with units and corresponding vars in conversion table
-  PDU_UCP <- left_join(profileDataUnits, unitsConversionProfile,
-                       by = c("var", "unit_levels"),
-                       suffix = c(".PD", ".UT")) %>%
-    filter(
+  PDU_UCP <- dplyr::left_join(profileDataUnits, unitsConversionProfile,
+                              by = c("var", "unit_levels"),
+                              suffix = c(".PD", ".UT")) %>%
+    dplyr::filter(
       !is.na(unitConversionFactor),
       unitConversionFactor != 1
     )
@@ -263,19 +263,19 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
           print(paste("mutate: ", dataCol))
 
           baseNote <- notes %>%
-            filter(var == dataCol) %>%
-            select(var_notes)
+            dplyr::filter(var == dataCol) %>%
+            dplyr::select(var_notes)
 
           notes <- notes %>%
-            mutate(var_notes = replace(var_notes,
-                                       var == dataCol,
-                                       paste0(baseNote, "; UNITS CONVERSION APPLIED: ", PDU_UCP[PDU_UCP$var == dataCol,]['unitConversionFactor'])))
+            dplyr::mutate(var_notes = replace(var_notes,
+                                              var == dataCol,
+                                              paste0(baseNote, "; UNITS CONVERSION APPLIED: ", PDU_UCP[PDU_UCP$var == dataCol,]['unitConversionFactor'])))
         } else {
           print(paste("add_row: ", dataCol))
           notes <- notes %>%
-            add_row(source = 'profile',
-                    var = dataCol,
-                    var_notes = paste0("UNITS CONVERSION APPLIED: ", PDU_UCP[PDU_UCP$var == dataCol,]['unitConversionFactor']))
+            tibble::add_row(source = 'profile',
+                            var = dataCol,
+                            var_notes = paste0("UNITS CONVERSION APPLIED: ", PDU_UCP[PDU_UCP$var == dataCol,]['unitConversionFactor']))
         }
       }
     }
@@ -286,7 +286,7 @@ data_homogonization <- function(directoryName, temporaryDirectory) {
 
   # generate wide data frame of location data
   locationDataWide <- locationData %>%
-    select(var, Value) %>%
+    dplyr::select(var, Value) %>%
     tidyr::spread(key = var, value = Value)
 
   # merge location data with each data frame

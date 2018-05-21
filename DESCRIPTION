@@ -20,8 +20,8 @@ Imports: googlesheets,
     tools,
     stringr,
     dplyr,
-    magrittr,
     tidyr,
     purrr,
-    readr
+    readr,
+    tibble
 RoxygenNote: 6.0.1

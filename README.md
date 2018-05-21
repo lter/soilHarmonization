@@ -26,15 +26,18 @@ devtools::install_github("srearl/soilHarmonization")
 
 ### use
 
-The script takes two input parameters: `directoryName` and `temporaryDirectory`. `directoryName` is quoted the name of the target Google Drive directory where the data and key file are located. Note that you must have read + write access to the target directory. `temporaryDirectory` is the quoted name and path of a directory on your local computer where the script will write output before uploading to the target Google Drive directory from which the data and key file were accessed. Script output includes a combined notes file and homogenized versions of the all provided data, each appended with *HMGZD* in the file names. Special notes about the `temporarydirectory`:
+The script takes two input parameters: `directoryName` and `temporaryDirectory`. `directoryName` is quoted the name of the target Google Drive directory where the data and key file are located. Note that you must have read + write access to the target directory. `temporaryDirectory` is the quoted name and path of a directory on your local computer where the script will write output before uploading to the target Google Drive directory from which the data and key file were accessed. Script output includes a combined notes file and homogenized versions of the all provided data, each appended with *HMGZD* in the file names.
+
+Special notes about the `temporarydirectory`:
 
 -   the full-path should be provided (e.g., '/home/desktop/cdr\_output/')
--   the directory name should feature a trailing forward (Linux, Mac) or backward (Windows) slash (but the script should add this if not provided
+-   the directory name should feature a trailing forward (Linux, Mac) or backward (Windows) slash (but the script should add this if not provided)
 -   the script will create the directory if it does not exist
--   the same directory can be used for multiple iterations but the script will delete any content so be sure to move or back up files in the directory that you wish to save
+-   the same `temporaryDirectory` can be used for multiple iterations but the script will delete any content so be sure to move or back up files in the `temporaryDirectory` that you wish to save
 
-running the homogenization function:
+**running the homogenization function, example:**
 
 ``` r
-data_homogenization('Luquillo elevation gradient', '~/Desktop/luq_homogenized')
+data_homogenization(directoryName = 'Luquillo elevation gradient', 
+                    temporaryDirectory = '~/Desktop/luq_homogenized')
 ```
