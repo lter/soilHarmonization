@@ -1,0 +1,27 @@
+Package: soilHarmonization
+Type: Package
+Title: Homogenize LTER Soil Organic Matter Working Group data and notes
+Version: 0.1.0
+Authors@R: person("S", "Earl", email = "stevan.earl@asu.edu", role = c("aut", "cre"))
+Maintainer: The package maintainer <stevan.earl@asu.edu>
+Description: Imports data and a key
+    translation file from a Google Directory that the user is able to access.
+    Data are homogenized to feature common header names and units, and
+    dataset-level notes appended to each data file. Output includes
+    standardized data and notes to a local directory on the user's computer
+    that are also uploaded to the Google Directory identified by the user as
+    containing the source data and key translation file. Modified data are
+    appeneded with the string 'HMGZD'.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports: googlesheets,
+    googledrive,
+    tools,
+    stringr,
+    dplyr,
+    magrittr,
+    tidyr,
+    purrr,
+    readr
+RoxygenNote: 6.0.1
