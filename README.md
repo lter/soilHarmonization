@@ -1,11 +1,11 @@
-README
+soilHarmonization
 ================
 
 <!-- README.md is generated from README.Rmd. Please edit the latter. -->
 soilHarmonization: package to harmonize data and notes for the LTER Soil Organic Matter Working Group
-=====================================================================================================
+-----------------------------------------------------------------------------------------------------
 
-add conten...
+add content...
 
 ### Installation
 
