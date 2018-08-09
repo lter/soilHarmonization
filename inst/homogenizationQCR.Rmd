@@ -1,0 +1,68 @@
+---
+title: false
+output: html_document
+params:
+  param_namesOE: "default"
+  param_namesHmgzd: "default"
+  param_rowCount: "default"
+  param_locationVars: "default"
+  param_numProfileOE: "default"
+  param_numProfileHZ: "default"
+  param_profileVars: "default"
+  param_summaryPlots: "default"
+---
+
+#### data homogenization processing summary and QC check results
+
+**files processed: **
+```{r filesProcessed, echo=FALSE, results='asis'}
+
+set.alignment('left')
+bind_rows(
+  tibble(
+    type = "provided data",
+    filename = params$param_namesOE
+  ),
+  tibble(
+    type = "homogenized data",
+    filename = params$param_namesHmgzd
+  )) %>% 
+pandoc.table(split.table = Inf, missing = "")
+```
+
+
+**summary of row counts from submitted and homogenized data: **
+```{r rowCount, echo=FALSE, results='asis'}
+
+set.alignment('left')
+pandoc.table(params$param_rowCount, split.table = Inf, missing = "")
+# pandoc.table(data.frame(params$param_rowCount), split.table = Inf, missing = "")
+```
+
+
+**confirm all location-level variables entered into the key file were included in the homogenized data**
+```{r locationDataCheck, echo=FALSE, results='asis'}
+
+set.alignment('left')
+pandoc.table(params$param_locationVars, split.table = Inf, missing = "")
+```
+
+
+**confirm all profile-level variables entered into the key file were included in the homogenized data**
+
+*profile data variables expected:* `r params$param_numProfileOE`  
+*profile data variables homogenized:* `r params$param_numProfileHZ`
+
+```{r profileDataSummary, echo=FALSE, results='asis'}
+
+set.alignment('left')
+pandoc.table(params$param_profileVars, split.table = Inf, missing = "")
+```
+
+
+#### summary plotting
+
+```{r summaryPlotting, echo=FALSE, warning=FALSE}
+
+print(params$param_summaryPlots)
+```

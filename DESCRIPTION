@@ -23,5 +23,8 @@ Imports: googlesheets,
     tidyr,
     purrr,
     readr,
-    tibble
-RoxygenNote: 6.0.1
+    tibble,
+    pander,
+    fuzzyjoin,
+    ggplot2
+RoxygenNote: 6.1.0
