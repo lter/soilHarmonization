@@ -409,7 +409,6 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
                       param_profileVars = profileDataSummaryResult,
                       param_summaryPlots = plotOutput
                     ),
-                    output_file = paste0(temporaryDirectory, directoryName, "_HMGZD_QC"))
-                    # output_file = "~/Desktop/HMGZD_QC.pdf")
+                    output_file = paste0(temporaryDirectory, directoryName, "_HMGZD_QC.html"))
 
 } # end of homogenization_QC function
