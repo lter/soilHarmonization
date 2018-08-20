@@ -24,9 +24,9 @@ Install the current version from GitHub (after installing the `devtools` package
 devtools::install_github("srearl/soilHarmonization")
 ```
 
-### use
+### data\_homogenization: use
 
-The script takes two input parameters: `directoryName` and `temporaryDirectory`. `directoryName` is quoted the name of the target Google Drive directory where the data and key file are located. Note that you must have read + write access to the target directory. `temporaryDirectory` is the quoted name and path of a directory on your local computer where the script will write output before uploading to the target Google Drive directory from which the data and key file were accessed. Script output includes a combined notes file and homogenized versions of the all provided data, each appended with *HMGZD* in the file names.
+The `data_homogenization` script takes two input parameters: `directoryName` and `temporaryDirectory`. `directoryName` is quoted the name of the target Google Drive directory where the data and key file are located. Note that you must have read + write access to the target directory. `temporaryDirectory` is the quoted name and path of a directory on your local computer where the script will write output before uploading to the target Google Drive directory from which the data and key file were accessed. Script output includes a combined notes file and homogenized versions of the all provided data, each appended with *HMGZD* in the file names.
 
 Special notes about the `temporarydirectory`:
 
@@ -40,4 +40,24 @@ Special notes about the `temporarydirectory`:
 ``` r
 data_homogenization(directoryName = 'Luquillo elevation gradient', 
                     temporaryDirectory = '~/Desktop/luq_homogenized')
+```
+
+### homogenization\_QC: use
+
+Following successful application of the `data_homogenization` script, a quality-control function (`homogenization_QC`) may be used to assess some aspects of the data homogeniztion process. `homogenization_QC` performs three Q-C checks: (1) reports the number of rows in the provided data file(s) and homogenized data file(s); (2) evalutes whether all location data provided in the key file were successfully incorporated into the homogenized data files(s); and (3) confirms that all profile-level variables entered into the key file were included in the homogenized data with a summary of those variables. In addition, the script generates plots all treatment and experimental (i.e., considered independent) variables identified in the key file against all dependent variables identified in the key file. Box plots are generated when the independent variable is categorical whereas scatter plots are generated when the independent variable is numeric. Please keep in mind that the plots are to provide only a general, visual assessment and comparison of the data provided for error-checking purposes, and are not intended to be exhaustive or of publication quality.
+
+As with the `data_homogenization` script, `homogenization_QC` takes two input parameters: `directoryName` and `temporaryDirectory`. `directoryName` is the quoted the name of the target Google Drive directory where the data, key file, and now homogenized data and notes are located. Note that you must have read + write access to the target directory. `temporaryDirectory` is the quoted name and path of a directory on your local computer where the script will write output before uploading to the target Google Drive directory from which the files were accessed. Script output is a single html file with a file name generated from the temporaryDirectory and directoryName, and appended with "\_HMGZD\_QC.html". Please note that html files do not render properly if opended in Google Drive, so the file should be downloaded and opened using a web browser, or viewed from the `temporaryDirectory` where a copy of the file will also reside.
+
+Special notes about the `temporarydirectory`:
+
+-   the full-path should be provided (e.g., '/home/desktop/cdr\_output/')
+-   the directory name should feature a trailing forward (Linux, Mac) or backward (Windows) slash (but the script should add this if not provided)
+-   the script will create the directory if it does not exist
+-   the same `temporaryDirectory` can be used for multiple iterations but the script will delete any content so be sure to move or back up files in the `temporaryDirectory` that you wish to save
+
+**running the quality-control function, example:**
+
+``` r
+homogenization_QC(directoryName = 'Luquillo elevation gradient', 
+                  temporaryDirectory = '~/Desktop/luq_homogenized')
 ```
