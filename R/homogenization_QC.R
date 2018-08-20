@@ -82,14 +82,16 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
     dplyr::pull(id)
 
   # list files in Google directory
-  dirFileList <- googledrive::drive_ls(path = directoryName)
+  # suppressWarnings to ignore googleDrive ref. to collapse, which is deprecated
+  dirFileList <- suppressWarnings(googledrive::drive_ls(path = directoryName))
 
   # isolate names of files in Google directory
   dirFileNames <- dirFileList %>%
     filter(
       !grepl("duplicates", name), # remove duplicates file/folder
       file_ext(name) != "zip", # remove zipped files
-      file_ext(name) != "pdf" # remove PDF files
+      file_ext(name) != "pdf", # remove PDF files
+      file_ext(name) != "txt" # remove txt files
     ) %>%
     select(name) %>%
     pull(name)
@@ -410,5 +412,13 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
                       param_summaryPlots = plotOutput
                     ),
                     output_file = paste0(temporaryDirectory, directoryName, "_HMGZD_QC.html"))
+
+
+
+  # upload html output to Google Drive --------------------------------------
+
+  googledrive::drive_upload(paste0(temporaryDirectory, directoryName, "_HMGZD_QC.html"),
+                            path = googledrive::drive_get(googledrive::as_id(googleID)))
+
 
 } # end of homogenization_QC function
