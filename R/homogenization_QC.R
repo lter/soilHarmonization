@@ -29,6 +29,7 @@
 #' @importFrom fuzzyjoin stringdist_inner_join
 #' @import purrr
 #' @import ggplot2
+#' @import rmarkdown
 #'
 #' @return A report in PDF format of processing summary, quality control checks,
 #'   and generalized plots of homogenized data in a local directory identified
@@ -91,6 +92,7 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
       !grepl("duplicates", name), # remove duplicates file/folder
       file_ext(name) != "zip", # remove zipped files
       file_ext(name) != "pdf", # remove PDF files
+      file_ext(name) != "html", # remove html files
       file_ext(name) != "txt" # remove txt files
     ) %>%
     select(name) %>%
@@ -293,10 +295,33 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
     select(var) %>%
     pull()
 
-  # helper function for removing empty columns for plotting
+  # HELPER FUNCTION not_all_na: for removing empty columns for plotting
   not_all_na <- function(x) {!all(is.na(x))}
 
-  # faceted plot of differying types from:
+  # HELPER FUNCTION ggname: to surround dependent variable passed to plotting
+  # function in backticks. This problem arose when attempting to plot data sets
+  # that had column nanes starting with a number (e.g., 13c) because we need to
+  # call aes_string (as opposed to aes).
+
+  # https://stackoverflow.com/questions/13445435/ggplot2-aes-string-fails-to-handle-names-starting-with-numbers-or-containing-s
+
+  ggname <- function(x) {
+    if (class(x) != "character") {
+      return(x)
+    }
+    y <- sapply(x, function(s) {
+      if (!grepl("^`", s)) {
+        s <- paste("`", s, sep="", collapse="")
+      }
+      if (!grepl("`$", s)) {
+        s <- paste(s, "`", sep="", collapse="")
+      }
+    }
+    )
+    y
+  }
+
+  # faceted plot of differing types from:
 
   # complicated approaches (worked but ugly)
   # https://statbandit.wordpress.com/2011/07/29/a-ggplot-trick-to-plot-different-plot-types-in-facets/
@@ -358,8 +383,13 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
         mutate(valueHMGZD = as.numeric(valueHMGZD))
 
       # generate plot
+
+      # first call ggname helper function to surround depVar in backticks to
+      # accommodate vars that start with numbers
+      depVarTicked <- ggname(depVar)
+
       characterData %>%
-        ggplot(aes_string(y = depVar)) +
+        ggplot(aes_string(y = depVarTicked)) +
         geom_boxplot(aes_string(x = "valueHMGZD")) +
         geom_point(data = numericData, aes_string(x = "valueHMGZD")) +
         facet_wrap(~ varHMGZD, scales = "free")
@@ -368,10 +398,17 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
 
       # panels of box plots for passed dependent variable if all independent
       # variables are non-numeric
+
+      # first call ggname helper function to surround depVar in backticks to
+      # accommodate vars that start with numbers; here we need a unticked (for
+      # dplyr) and ticked (for ggplot::aes_string) version of dep var so create
+      # a unique parameter (depVarTicked) to pass only to ggplot
+      depVarTicked <- ggname(depVar)
+
       dataEntity %>%
         select(one_of(hmgzdIndVars), depVar) %>%
         gather(key = varHMGZD, value = valueHMGZD, -depVar) %>%
-        ggplot(aes_string(x = "valueHMGZD", y = depVar)) +
+        ggplot(aes_string(x = "valueHMGZD", y = depVarTicked)) +
         geom_boxplot() +
         facet_wrap(~ varHMGZD, scales = "free")
 

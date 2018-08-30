@@ -26,5 +26,6 @@ Imports: googlesheets,
     tibble,
     pander,
     fuzzyjoin,
-    ggplot2
+    ggplot2,
+    rmarkdown
 RoxygenNote: 6.1.0
