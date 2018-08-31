@@ -333,11 +333,11 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
   # qcPlotsInner
 
   # NOTE: function uses a different approach depending on whether any
-  # independent variables are numeric (versus all character/numeric). This will
-  # fail if ALL independent variables are numeric as it will be looking for at
-  # least one independent varible of type character. I expect most if not all
-  # data sets will have at least one non-numeric independent variable but may
-  # need to revisit if this is an issue.
+  # independent variables are numeric, character, or a mix of numeric and
+  # character.
+
+  # NOTE: as constructed, function will fail if there are not any independent
+  # variables in the data file
 
   qcPlotsInner <- function(dataEntity, depVar) {
 
@@ -347,7 +347,46 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
       select_if(not_all_na) %>%
       colnames()
 
-    if (any(sapply(dataEntity[,names(dataEntity) %in% c(exTrtVars)], is.numeric))) {
+    if (all(sapply(dataEntity[,names(dataEntity) %in% c(exTrtVars)], is.numeric))) {
+
+      # panels of box plots for passed dependent variable if all independent
+      # variables are numeric
+
+      # first call ggname helper function to surround depVar in backticks to
+      # accommodate vars that start with numbers; here we need a unticked (for
+      # dplyr) and ticked (for ggplot::aes_string) version of dep var so create
+      # a unique parameter (depVarTicked) to pass only to ggplot
+      depVarTicked <- ggname(depVar)
+
+      dataEntity %>%
+        select(one_of(hmgzdIndVars), depVar) %>%
+        gather(key = varHMGZD, value = valueHMGZD, -depVar) %>%
+        ggplot(aes_string(x = "valueHMGZD", y = depVarTicked)) +
+        geom_point() +
+        facet_wrap(~ varHMGZD, scales = "free")
+
+    } else if (all(sapply(dataEntity[,names(dataEntity) %in% c(exTrtVars)], is.character))) {
+
+      # panels of box plots for passed dependent variable if all independent
+      # variables are non-numeric
+
+      # first call ggname helper function to surround depVar in backticks to
+      # accommodate vars that start with numbers; here we need a unticked (for
+      # dplyr) and ticked (for ggplot::aes_string) version of dep var so create
+      # a unique parameter (depVarTicked) to pass only to ggplot
+      depVarTicked <- ggname(depVar)
+
+      dataEntity %>%
+        select(one_of(hmgzdIndVars), depVar) %>%
+        gather(key = varHMGZD, value = valueHMGZD, -depVar) %>%
+        ggplot(aes_string(x = "valueHMGZD", y = depVarTicked)) +
+        geom_boxplot() +
+        facet_wrap(~ varHMGZD, scales = "free")
+
+    } else {
+
+      # panels of mixed box and point plots for passed dependent variable when
+      # there is a mix of numeric and non-numeric indepdnent variables
 
       # isolate non-numeric independent variables
       characterVars <- dataEntity %>%
@@ -394,27 +433,9 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
         geom_point(data = numericData, aes_string(x = "valueHMGZD")) +
         facet_wrap(~ varHMGZD, scales = "free")
 
-    } else {
-
-      # panels of box plots for passed dependent variable if all independent
-      # variables are non-numeric
-
-      # first call ggname helper function to surround depVar in backticks to
-      # accommodate vars that start with numbers; here we need a unticked (for
-      # dplyr) and ticked (for ggplot::aes_string) version of dep var so create
-      # a unique parameter (depVarTicked) to pass only to ggplot
-      depVarTicked <- ggname(depVar)
-
-      dataEntity %>%
-        select(one_of(hmgzdIndVars), depVar) %>%
-        gather(key = varHMGZD, value = valueHMGZD, -depVar) %>%
-        ggplot(aes_string(x = "valueHMGZD", y = depVarTicked)) +
-        geom_boxplot() +
-        facet_wrap(~ varHMGZD, scales = "free")
-
     }
 
-  }
+  } # close qcPlotsInner
 
   # qcPlotsOuter generates plots of all independent vars v. each dependent var
   # for each data entity in the data set
