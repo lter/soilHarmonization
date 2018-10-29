@@ -173,20 +173,48 @@ homogenization_QC <- function(directoryName, temporaryDirectory) {
 
   # key file was loaded in a previous step so remove from oe data
   oeData <- oeData[!grepl("key", names(oeData), ignore.case = T)]
-
-
+  
+  
   # OE and HMGZD data will not necessarily be loaded in step; use fuzzy matching
   # to build a tibble of OE data names that correspond to the HMGZD data names
-  matchedNames <- tibble(oeNames = names(oeData)) %>%
-    fuzzyjoin::stringdist_inner_join(tibble(hmgzdNames = names(hmgzdData)), by = c("oeNames" = "hmgzdNames"), max_dist = 7)
-
-
+  
+  # Update 2018-10-29: because the number of string substitutions required for
+  # matching will vary, the max_dist parameter in the fuzzy join will have to be
+  # dynamic. New code sets the max_dist parameter to a low, default value of 5
+  # and establishes an empty tibble of the matchedNames object. The
+  # match_oe_hmgzd function is called with an incremenetally increasing max_dist
+  # until the number of matches (rows in the matchedNames tibble) is equal to
+  # the length of oeData objects (oeData chosen arbritatrily over hmgzdData -
+  # and perhaps there should be some check that these are equal from the
+  # outset).
+  
+  stringMaxDist <- 5 # arbitrary max_dist parameter
+  matchedNames <- tibble() # empty tibble (nrow = 0)
+  
+  match_oe_hmgzd <- function(stringMaxDist) {
+    
+    matchedNamesInner <- tibble(oeNames = names(oeData)) %>%
+      fuzzyjoin::stringdist_inner_join(tibble(hmgzdNames = names(hmgzdData)), by = c("oeNames" = "hmgzdNames"), max_dist = stringMaxDist)
+    
+    return(matchedNamesInner)  
+    
+  }
+  
+  while(nrow(matchedNames) < length(oeData)) { 
+    
+    stringMaxDist <- stringMaxDist + 1
+    
+    matchedNames <- match_oe_hmgzd(stringMaxDist)  
+    
+  }
+  
+  
   # check I: number rows ----------------------------------------------------
-
+  
   rowCount <- data.frame(data_entity = NA,
                          num_rows_data = NA,
                          num_rows_homogenized = NA)
-
+  
   for (i in 1:length(oeData)) {
 
     rowCount[i,]$data_entity <- names(oeData)[[i]]
