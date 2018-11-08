@@ -99,8 +99,15 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # isolate names from Google directory
   dirFileNames <- dirFileList %>%
-    dplyr::select(name) %>%
-    dplyr::pull(name)
+    filter(
+      !grepl("duplicates", name), # remove duplicates file/folder
+      file_ext(name) != "zip", # remove zipped files
+      file_ext(name) != "pdf", # remove PDF files
+      file_ext(name) != "html", # remove html files
+      file_ext(name) != "txt" # remove txt files
+    ) %>%
+    select(name) %>%
+    pull(name)
 
 
   # ACCESS KEY FILE
@@ -111,7 +118,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   locationData <- googlesheets::gs_read(keyFileToken, ws = 1) %>%
     dplyr::filter(!is.na(Value)) %>%
-    tibble::add_row(Value = googleID, var = 'google_id', .before = 1)
+    tibble::add_row(Value = googleID, var = 'google_id') %>%
+    tibble::add_row(Value = directoryName, var = 'google_dir')
 
   profileData <- googlesheets::gs_read(keyFileToken, ws = 2) %>%
     dplyr::filter(!is.na(header_name))
@@ -200,7 +208,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   missingValueCode = "NA"
   if (exists('mvc1')) { missingValueCode = mvc1}
   if (exists('mvc2')) { missingValueCode = mvc2}
-  if (exists('mvc1') && exists('mvc2')) { missingValueCode = c(paste(mvc1, mvc2))}
+  if (exists('mvc1') && exists('mvc2')) { missingValueCode = c(mvc1, mvc2)}
 
 
   # DATA FILE(S)
@@ -293,6 +301,24 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # merge location data with each data frame
   googleDirData <- lapply(googleDirData, function(frame) {
     merge(locationDataWide, frame, all = T) })
+
+  # ADD THE DATA FILE NAME TO EACH DATA FILE
+
+  # see the following resource for the attribute approach:
+  # http://max2.ese.u-psud.fr/epc/conservation/Girondot/Publications/Blog_r/Entrees/2014/3/11_Get_the_list_element_name_within_lapply().html
+
+  # 1. add the list object name (the data file name) as an attribute called ref
+  # to each list item. If no attributes exist, add the ref attribute, else if
+  # attributes already exist (should always be the case), append ref to existing
+  # attrs.
+  for (i in 1:length(googleDirData)) if (is.null(attributes(googleDirData[[i]]))) {attributes(googleDirData[[i]]) <- list(ref=names(googleDirData)[i])} else {attributes(googleDirData[[i]]) <- c(attributes(googleDirData[[i]]), ref=names(googleDirData)[i])}
+
+  # 2. apply the ref attribute (the object name) as a column titled source_data;
+  # move file identity details to the first few columns
+  googleDirData <- lapply(googleDirData, function(x) {
+    x %>% mutate(data_file = attributes(x)$ref) %>%
+      select(google_dir, data_file, google_id, everything())
+  })
 
   # rename files to include base name + indication of homogenization
   names(googleDirData) <- paste0(stringr::str_extract(names(googleDirData), "^[^\\.]*"), "_HMGZD")
