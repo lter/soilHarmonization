@@ -240,6 +240,35 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     setNames(frame, profileData$var[match(names(frame), profileData$header_name)]) })
 
 
+  # add experiment and treatment units to data files
+
+  # generate a vector of ALL POSSIBLE experiment and treatment var names from the
+  # key file
+  experimentTreatmentVarSet <- c(
+    'L1',
+    'L2',
+    'L3',
+    'L4',
+    'L5',
+    'L6',
+    'tx_L1',
+    'tx_L2',
+    'tx_L3',
+    'tx_L4',
+    'tx_L5',
+    'tx_L6'
+  )
+
+  if(profileData %>% filter(var %in% experimentTreatmentVarSet) %>% nrow() > 0) {
+
+    googleDirData <- lapply(googleDirData,
+                            add_exp_trt_levels,
+                            profileData = profileData,
+                            experimentTreatmentVarSet = experimentTreatmentVarSet)
+
+  }
+
+
   # +++++++++++++++++++++++++++++++++++++++
   # BEGIN STANDARDIZE UNITS::profile data
   # source('~/Dropbox/development/standardize_units_profile.R')
