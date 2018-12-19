@@ -19,11 +19,11 @@ R object of type tibble
 }
 \description{
 The sheet_download function downloads the contents of a Google
-  Sheet into an R object with with optional parameters for rows to skip and a
-  missing value code upon import.
+Sheet into an R object with with optional parameters for rows to skip and a
+missing value code upon import.
 }
 \note{
 sheet_download is intended primarily as a helper function for batch
-  downloading Google Sheets via a apply or map call but can be used
-  independently.
+downloading Google Sheets via a apply or map call but can be used
+independently.
 }

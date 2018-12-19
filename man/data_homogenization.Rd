@@ -16,21 +16,21 @@ Linux) or backward slash (Windows).}
 }
 \value{
 Homogenized data and notes in a local directory identified by the
-  user, and uploaded to the Google Drive source directory.
+user, and uploaded to the Google Drive source directory.
 }
 \description{
 The function data_homogonization imports data and a key
-  translation file from a Google Directory that the user is able to access.
-  Data are homogenized to feature common header names and units, and
-  dataset-level notes appended to each data file. Output includes
-  standardized data and notes to a local directory on the user's computer
-  that are also uploaded to the Google Directory identified by the user as
-  containing the source data and key translation file. Modified data are
-  appeneded with the string 'HMGZD'.
+translation file from a Google Directory that the user is able to access.
+Data are homogenized to feature common header names and units, and
+dataset-level notes appended to each data file. Output includes
+standardized data and notes to a local directory on the user's computer
+that are also uploaded to the Google Directory identified by the user as
+containing the source data and key translation file. Modified data are
+appeneded with the string 'HMGZD'.
 }
 \note{
 data_homogonization relies on the helper functions detect_os and
-  sheet_download.
+sheet_download.
 }
 \examples{
 \dontrun{

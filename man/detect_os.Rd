@@ -7,12 +7,14 @@
 detect_os()
 }
 \value{
-\item{win}{Windows OS}
-    \item{mac}{Mac OS}
-    \item{lin}{Linux OS}
+\preformatted{\item{win}{Windows OS}
+\item{mac}{Mac OS}
+\item{lin}{Linux OS}
+}
 }
 \description{
-This function uses \code{Sys.info} to detect the user's operating system
-    and outputs an abbreviated character string to be used as inputs to OS
-    specific function calls.
+\preformatted{This function uses \code{Sys.info} to detect the user's operating system
+and outputs an abbreviated character string to be used as inputs to OS
+specific function calls.
+}
 }

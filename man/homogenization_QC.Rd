@@ -3,7 +3,7 @@
 \name{homogenization_QC}
 \alias{homogenization_QC}
 \title{Processing summary and quality control checks for homogenized LTER
-  Soil Organic Matter Working Group data}
+Soil Organic Matter Working Group data}
 \usage{
 homogenization_QC(directoryName, temporaryDirectory)
 }
@@ -18,20 +18,20 @@ Linux) or backward slash (Windows).}
 }
 \value{
 A report in PDF format of processing summary, quality control checks,
-  and generalized plots of homogenized data in a local directory identified
-  by the user.
+and generalized plots of homogenized data in a local directory identified
+by the user.
 }
 \description{
 The function homogonization_QC imports provided and homogenized
-  data, and the associated key translation file from a Google Directory that
-  the user is able to access. The script compares the provided data to the
-  homogenized data, and reports on processing output, select quality control
-  checks, and provides generalized plots of independent versus dependent
-  variables. Output is a PDF report.
+data, and the associated key translation file from a Google Directory that
+the user is able to access. The script compares the provided data to the
+homogenized data, and reports on processing output, select quality control
+checks, and provides generalized plots of independent versus dependent
+variables. Output is a PDF report.
 }
 \note{
 data_homogonization relies on the helper functions detect_os and
-  sheet_download.
+sheet_download.
 }
 \examples{
 \dontrun{

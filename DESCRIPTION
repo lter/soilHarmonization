@@ -15,7 +15,9 @@ Description: Imports data and a key
 License: CC0
 Encoding: UTF-8
 LazyData: true
-Imports: googlesheets,
+Roxygen: list(markdown = TRUE)
+Imports: 
+    googlesheets,
     googledrive,
     tools,
     stringr,
@@ -27,5 +29,7 @@ Imports: googlesheets,
     pander,
     fuzzyjoin,
     ggplot2,
-    rmarkdown
-RoxygenNote: 6.1.0
+    rmarkdown,
+    openxlsx
+Remotes: awalker89/openxlsx
+RoxygenNote: 6.1.1
