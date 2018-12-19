@@ -14,13 +14,13 @@ A modified object of type Tibble or data frame
 }
 \description{
 The add_exp_trt_levels function adds the unit levels (e.g.,
-  Plot, Watershed, warming, precip) as new columns in the homogenized output.
-  New columns employ the naming convention of experiment or treatment level
-  '_level' (e.g., L2_level).
+Plot, Watershed, warming, precip) as new columns in the homogenized output.
+New columns employ the naming convention of experiment or treatment level
+'_level' (e.g., L2_level).
 }
 \note{
 add_exp_trt_levels is intended as a helper function for the main
-  data_homogenization.R of the soilHarmonization package. As such, this
-  function requires the profileData object that is part of the
-  data_harmonization.R workflow and will not work outside of that workflow.
+data_homogenization.R of the soilHarmonization package. As such, this
+function requires the profileData object that is part of the
+data_harmonization.R workflow and will not work outside of that workflow.
 }
