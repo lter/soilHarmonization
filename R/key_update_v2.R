@@ -8,31 +8,34 @@
 #'   into key files was not lost, so the new key file features had to be added
 #'   to existing key file without information loss.
 #'
-#' @note key_update_v2 workflow:
-#' 1. download project key file with googledrive
-#' 2. load downloaded (now xlsx) into R with openxlsx::loadWorkbook (see note)
-#' 3. additions to the workbook object as needed
-#' 4. prescribe validations with openxlsx::dataValidation
-#' 5. fix styling as needed with openxlsx::createSytle/addStyle
-#' 6. write workbook back to file with openxlsx::write.xlsx (or saveWorkbook)
-#' 7. upload workbook back to project directory to be followed by a re-homog
+#' @note **key_update_v2 workflow:**
+#'   1. download project key file with googledrive
+#'   2. load downloaded (now xlsx) into R with openxlsx::loadWorkbook (see note)
+#'   3. additions to the workbook object as needed
+#'   4. prescribe validations with openxlsx::dataValidation
+#'   5. fix styling as needed with openxlsx::createSytle/addStyle
+#'   6. write workbook back to file with openxlsx::write.xlsx (or saveWorkbook)
+#'   7. upload workbook back to project directory to be followed by a re-homog
 #'
-#' @note the workflow was getting hung up at step 2 in the workflow. The
+#' @note The workflow was getting hung up at step 2 in the workflow. The
 #'   solution was to use the development branch of the openxlsx package (see
 #'   https://github.com/awalker89/openxlsx/issues/386)
 #'   devtools::install_github("awalker89/openxlsx") Rcpp package is a dependency
 #'
-#' @note version 2 new features include:
-#' 1. several new metadata fields in the location tab ('time_series',
-#' 'gradient', 'experiments', 'control_id', 'number_treatments', 'merge_align',
-#' 'key_version').
-#' 2. A new 'logical' column in the Units tab to facilitate a YES, NO drop-down
-#' option for several of the new metadata fields added to the location tab.
-#' 3. Revised options in the Units tab for the list of drop-down options in the
-#' treatment rows of the Profile tab.
-#' 4. Add pull-down menu for units field of lit_lig in location tab.
-#' 5. Clarify meanings (Var_long field) of profle tab c_tot and soc (bulk, not
-#' fraction)
+#' @note **Key file version 2 new features include:**
+#'   1. several new metadata fields in the location tab ('time_series',
+#'   'gradient', 'experiments', 'control_id', 'number_treatments',
+#'   'merge_align', 'key_version').
+#'   2. A new 'logical' column in the Units tab to facilitate a YES, NO
+#'   drop-down option for several of the new metadata fields added to the
+#'   location tab.
+#'   3. Revised options in the Units tab for the list of drop-down options in
+#'   the treatment rows of the Profile tab.
+#'   4. Add pull-down menu for units field of lit_lig in location tab.
+#'   5. Clarify meanings (Var_long field) of profle tab c_tot and soc (bulk, not
+#'   fraction).
+#'   6. Duplicate var values in the Location and Profile tabs are renamed with
+#'   unique names.
 #'
 #' @note Though specific to version 2 features, this workflow could be modified
 #'   to implement new features for future versions.
@@ -42,21 +45,21 @@
 #'   work outside of the Aurora environemnt, but the lter-som group should not
 #'   do this as we need to document all changes, and a log file must exist.
 #'
-#' @note establish or reset a keyfile update log
+#' @note **To establish or reset a keyfile update log:**
 #' ```
-#' create template for logging details of key file upversions. caution: this
-#' code will overwrite an existing log
+#'   create template for logging details of key file upversions (caution: this code
+#'   will overwrite an existing log)
 #'
-#' keyFileUpdateLogPath <- '/home/shares/lter-som/key_file_update_log.csv'
+#'   keyFileUpdateLogPath <- '/home/shares/lter-som/key_file_update_log.csv'
 #'
-#' tibble(
-#'   keyFileName = as.character(NA),
-#'   keyFileDirectory = as.character(NA),
-#'   timestamp = as.POSIXct(NA)
-#' ) %>%
-#'   write_csv(path = keyFileUpdateLogPath,
-#'             append = FALSE)
-#' ```
+#'   tibble(
+#'     keyFileName = as.character(NA),
+#'     keyFileDirectory = as.character(NA),
+#'     timestamp = as.POSIXct(NA)
+#'   ) %>%
+#'   write_csv(path = keyFileUpdateLogPath, append = FALSE)
+#'
+#'  ```
 #'
 #' @param sheetName name of key file in Google Drive to update with version 2
 #'   changes
@@ -80,31 +83,21 @@
 #' @import dplyr
 #' @import tibble
 #'
-#' @return Homogenized data and notes in a local directory identified by the
-#'   user, and uploaded to the Google Drive source directory.
+#' @return key_update_v2 actions and output include: (1) csv versions of the
+#'   source key file location and profie tabs are written to a specified
+#'   directory; (2) a new key file is created with desired version 2
+#'   modifications; if successful, the key file update action is written to an
+#'   identified key file update log.
 #'
 #' @examples
 #' \dontrun{
 #'
-#'  key_version2('621_Key_Key_test')
-#'  key_version2('cap.557.Key_Key_master')
+#'  key_update_v2('621_Key_Key_test')
+#'  key_update_v2('cap.557.Key_Key_master')
 #'
 #' }
 #'
 #' @export
-
-# establish or reset log --------------------------------------------------
-
-# create template for logging details of key file upversions. caution: this code
-# will overwrite an existing log
-
-# tibble(
-#   keyFileName = as.character(NA),
-#   keyFileDirectory = as.character(NA),
-#   timestamp = as.POSIXct(NA)
-# ) %>%
-#   write_csv(path = '/home/shares/lter-som/key_file_update_log.csv',
-#             append = FALSE)
 
 key_update_v2 <- function(sheetName,
                           keyFileDownloadPath = '/home/shares/lter-som/key_file_download/',
@@ -404,6 +397,86 @@ key_update_v2 <- function(sheetName,
               startRow = grep("Bulk Layer Organic Carbon \\(CN analyzer\\) concentration", sheetProfile$Var_long) + 1,
               colNames = TRUE)
 
+  }
+
+
+  # edit var names such that they are unique ----
+
+  # LOCATION tab vars
+
+  # re-import location tab sheet
+  sheetLocation <- read.xlsx(xlsxFile = keyfileWorkbook,
+                             sheet = 'Location_data')
+
+  update_duplicateNames_location <- function(varLongSearchTerm, newVarTerm) {
+
+    # if (!is.null(grep(varLongSearchTerm, sheetLocation$Var_long))) {
+    if (!is.null(which(varLongSearchTerm == sheetLocation$Var_long))) {
+
+      writeData(wb = keyfileWorkbook,
+                sheet = 'Location_data',
+                x = newVarTerm,
+                startCol = 4,
+                startRow = which(varLongSearchTerm == sheetLocation$Var_long) + 1,
+                colNames = TRUE)
+
+    } # close if
+
+  } # close update_duplicateNames_location
+
+  # walk through updates to location tab
+  walk2(.x = newNamesLocation[['Var_long']], .y = newNamesLocation[['var_new_name']], .f = update_duplicateNames_location)
+
+  # LOCATION tab vars
+
+  # re-import profile tab sheet
+  sheetProfile <- read.xlsx(xlsxFile = keyfileWorkbook,
+                            sheet = 'Profile_data (Key-Key)')
+
+  for (i in 1:nrow(newNamesProfile)) {
+
+    if(!is.null(which(newNamesProfile[['Var_long']][i] == sheetProfile$Var_long & newNamesProfile[['Level']][i] == sheetProfile$Level))) {
+
+      writeData(wb = keyfileWorkbook,
+                sheet = 'Profile_data (Key-Key)',
+                x = newNamesProfile[['var_new_name']][i],
+                startCol = 4,
+                startRow = which(newNamesProfile[['Var_long']][i] == sheetProfile$Var_long & newNamesProfile[['Level']][i] == sheetProfile$Level) + 1,
+                colNames = TRUE)
+
+    } # close if
+
+  } # close loop
+
+  # confirm edits to make vars unique was successful
+
+  # re-import location tab sheet
+  sheetLocation <- read.xlsx(xlsxFile = keyfileWorkbook,
+                             sheet = 'Location_data')
+
+  # re-import profile tab sheet
+  sheetProfile <- read.xlsx(xlsxFile = keyfileWorkbook,
+                            sheet = 'Profile_data (Key-Key)')
+
+  numberDuplicateLocationVars <- sheetLocation %>%
+    group_by(var) %>%
+    count() %>%
+    filter(n > 1) %>%
+    nrow()
+
+  numberDuplicateProfileVars <- sheetProfile %>%
+    group_by(var) %>%
+    count() %>%
+    filter(n > 1) %>%
+    nrow()
+
+
+  if (numberDuplicateLocationVars > 0) {
+    stop("key update failed, there are still duplicate location vars")
+  }
+
+  if (numberDuplicateProfileVars > 0) {
+    stop("key update failed, there are still duplicate profile vars")
   }
 
 

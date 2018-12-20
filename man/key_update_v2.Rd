@@ -30,8 +30,11 @@ succesful update of a key file. This file must exist in advance of running
 the update utility}
 }
 \value{
-Homogenized data and notes in a local directory identified by the
-user, and uploaded to the Google Drive source directory.
+key_update_v2 actions and output include: (1) csv versions of the
+source key file location and profie tabs are written to a specified
+directory; (2) a new key file is created with desired version 2
+modifications; if successful, the key file update action is written to an
+identified key file update log.
 }
 \description{
 Early work with the SOM data indicated that additional details
@@ -42,7 +45,7 @@ into key files was not lost, so the new key file features had to be added
 to existing key file without information loss.
 }
 \note{
-key_update_v2 workflow:
+\strong{key_update_v2 workflow:}
 \enumerate{
 \item download project key file with googledrive
 \item load downloaded (now xlsx) into R with openxlsx::loadWorkbook (see note)
@@ -53,23 +56,26 @@ key_update_v2 workflow:
 \item upload workbook back to project directory to be followed by a re-homog
 }
 
-the workflow was getting hung up at step 2 in the workflow. The
+The workflow was getting hung up at step 2 in the workflow. The
 solution was to use the development branch of the openxlsx package (see
 https://github.com/awalker89/openxlsx/issues/386)
 devtools::install_github("awalker89/openxlsx") Rcpp package is a dependency
 
-version 2 new features include:
+\strong{Key file version 2 new features include:}
 \enumerate{
 \item several new metadata fields in the location tab ('time_series',
-'gradient', 'experiments', 'control_id', 'number_treatments', 'merge_align',
-'key_version').
-\item A new 'logical' column in the Units tab to facilitate a YES, NO drop-down
-option for several of the new metadata fields added to the location tab.
-\item Revised options in the Units tab for the list of drop-down options in the
-treatment rows of the Profile tab.
+'gradient', 'experiments', 'control_id', 'number_treatments',
+'merge_align', 'key_version').
+\item A new 'logical' column in the Units tab to facilitate a YES, NO
+drop-down option for several of the new metadata fields added to the
+location tab.
+\item Revised options in the Units tab for the list of drop-down options in
+the treatment rows of the Profile tab.
 \item Add pull-down menu for units field of lit_lig in location tab.
 \item Clarify meanings (Var_long field) of profle tab c_tot and soc (bulk, not
-fraction)
+fraction).
+\item Duplicate var values in the Location and Profile tabs are renamed with
+unique names.
 }
 
 Though specific to version 2 features, this workflow could be modified
@@ -80,25 +86,25 @@ set to that environment. These paths can be altered for the function to
 work outside of the Aurora environemnt, but the lter-som group should not
 do this as we need to document all changes, and a log file must exist.
 
-establish or reset a keyfile update log\preformatted{create template for logging details of key file upversions. caution: this
-code will overwrite an existing log
+\strong{To establish or reset a keyfile update log:}\preformatted{  create template for logging details of key file upversions (caution: this code
+  will overwrite an existing log)
 
-keyFileUpdateLogPath <- '/home/shares/lter-som/key_file_update_log.csv'
+  keyFileUpdateLogPath <- '/home/shares/lter-som/key_file_update_log.csv'
 
-tibble(
-  keyFileName = as.character(NA),
-  keyFileDirectory = as.character(NA),
-  timestamp = as.POSIXct(NA)
-) \%>\%
-  write_csv(path = keyFileUpdateLogPath,
-            append = FALSE)
+  tibble(
+    keyFileName = as.character(NA),
+    keyFileDirectory = as.character(NA),
+    timestamp = as.POSIXct(NA)
+  ) \%>\%
+  write_csv(path = keyFileUpdateLogPath, append = FALSE)
+
 }
 }
 \examples{
 \dontrun{
 
- key_version2('621_Key_Key_test')
- key_version2('cap.557.Key_Key_master')
+ key_update_v2('621_Key_Key_test')
+ key_update_v2('cap.557.Key_Key_master')
 
 }
 
