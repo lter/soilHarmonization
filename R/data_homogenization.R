@@ -85,6 +85,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   } else {
 
     file.remove(file.path(temporaryDirectory, list.files(temporaryDirectory)))
+
   }
 
 
@@ -110,18 +111,59 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     pull(name)
 
 
-  # ACCESS KEY FILE
+  # KEY FILE
 
-  # isolate key-key and extract details in location and profile tabs
-  keyFileName <- grep("key", dirFileNames, ignore.case = T, value = T)
+  # Update 2018-12-28: data_harmonization requires a key file version 2
+  if (!any(grepl("KEY_V2", dirFileNames, ignore.case = F))) {
+
+    stop("data_harmonization requires a key file version 2")
+
+  }
+
+  # isolate key file, and extract details in location and profile tabs
+  keyFileName <- grep("KEY_V2", dirFileNames, ignore.case = F, value = T)
   keyFileToken <- googlesheets::gs_title(keyFileName)
 
-  locationData <- googlesheets::gs_read(keyFileToken, ws = 1) %>%
+  # extract location and profile tabs of key file
+  locationData <- googlesheets::gs_read(keyFileToken, ws = 1)
+  profileData <- googlesheets::gs_read(keyFileToken, ws = 2)
+
+  # LOCATION TAB QC
+
+  # confirm requisite input to location tab
+  locationRequiredFields <- c(
+    'curator_PersonName',
+    'curator_organization',
+    'curator_email',
+    'time_series',
+    'gradient',
+    'experiments',
+    'merge_align'
+  )
+
+  if(any(is.na(locationData[c(locationRequiredFields),][['Value']]))) {
+
+    stop("one of required fields in location tab is missing (see package README for required fields)")
+
+  }
+
+  # using assertr but error message does not provide sufficient information
+  # locationData %>%
+  #   filter(var %in% locationRequiredFields) %>%
+  #   verify(not_na(Value))
+
+  # lat long coordinates
+  # wait for Derek's code to address lat long
+
+
+  # remove missing fields and add Google reference details to location
+  locationData <- locationData %>%
     dplyr::filter(!is.na(Value)) %>%
     tibble::add_row(Value = googleID, var = 'google_id') %>%
     tibble::add_row(Value = directoryName, var = 'google_dir')
 
-  profileData <- googlesheets::gs_read(keyFileToken, ws = 2) %>%
+  # remove missing fields from profile
+  profileData <- profileData %>%
     dplyr::filter(!is.na(header_name))
 
 
@@ -132,6 +174,16 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # capture notes from location and profile key-file tabs
   notes <- dplyr::bind_rows(
+    tibble(
+      source = "location",
+      Var_long = "Google Directory",
+      var = NA,
+      var_notes = directoryName
+    ),
+    locationData %>%
+      filter(var %in% c('network', 'site_code', 'location_name')) %>%
+      dplyr::mutate(source = "location") %>%
+      dplyr::select(source, Var_long, var, var_notes = Value),
     locationData %>%
       dplyr::filter(!is.na(var_notes)) %>%
       dplyr::mutate(source = "location") %>%
@@ -142,7 +194,6 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       dplyr::mutate(source = "profile") %>%
       dplyr::select(source, Var_long, var, var_notes)
   )
-
 
   # +++++++++++++++++++++++++++++++++++++++
   # BEGIN STANDARDIZE UNITS::location data
@@ -183,6 +234,15 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   }
 
   # END STANDARDIZE UNITS::location data
+  # +++++++++++++++++++++++++++++++++++++++
+
+
+  # +++++++++++++++++++++++++++++++++++++++
+  # BEGIN RANGE CHECK::location data
+
+
+
+  # END RANGE CHECK::location data
   # +++++++++++++++++++++++++++++++++++++++
 
 
