@@ -26,6 +26,7 @@
 #' @import googlesheets
 #' @import tools
 #' @importFrom stringr str_extract
+#' @importFrom purrr map_df
 #'
 #' @return Homogenized data and notes in a local directory identified by the
 #'   user, and uploaded to the Google Drive source directory.
@@ -64,9 +65,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # if (os %in% c('lin', 'mac')) {
 
-    if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
-      temporaryDirectory <- paste0(temporaryDirectory, "/")
-    }
+  if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
+    temporaryDirectory <- paste0(temporaryDirectory, "/")
+  }
 
   # } else if (os == 'win') {
   #
@@ -130,7 +131,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # LOCATION TAB QC
 
-  # confirm requisite input to location tab
+  # (1) confirm requisite input to location tab
   locationRequiredFields <- c(
     'curator_PersonName',
     'curator_organization',
@@ -141,16 +142,13 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     'merge_align'
   )
 
-  if(any(is.na(locationData[c(locationRequiredFields),][['Value']]))) {
+  if(any(is.na(locationData[locationData[['var']] %in% locationRequiredFields,]['Value']))) {
 
-    stop("one of required fields in location tab is missing (see package README for required fields)")
+    print(locationData[locationData[['var']] %in% locationRequiredFields,][c('var', 'Value')])
+    stop("at least one required field in location tab is missing (see output for missing (NA) value)")
 
   }
 
-  # using assertr but error message does not provide sufficient information
-  # locationData %>%
-  #   filter(var %in% locationRequiredFields) %>%
-  #   verify(not_na(Value))
 
   # lat long coordinates
   # wait for Derek's code to address lat long
@@ -172,7 +170,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # create a note name with path to output directory, name of key file + _HMGZD_NOTES.csv
   notesFileName <- paste0(tools::file_path_sans_ext(keyFileName), "_HMGZD_NOTES.csv")
 
-  # capture notes from location and profile key-file tabs
+  # capture notes from key file location and profile tabs
   notes <- dplyr::bind_rows(
     tibble(
       source = "location",
@@ -238,11 +236,136 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
 
   # +++++++++++++++++++++++++++++++++++++++
-  # BEGIN RANGE CHECK::location data
+  # BEGIN QC CHECK::location data
 
+  # establish empty tibble to log location QC errors
+  location_QC_report <- tibble(
+    var = as.character(NULL),
+    error = as.character(NULL)
+  )
 
+  # function to check for location vars in prescribed range
+  location_range_check <- function(locationVar) {
 
-  # END RANGE CHECK::location data
+    tryCatch({
+
+      targetValue <- locationQC %>%
+        filter(!is.na(minValue)) %>%
+        inner_join(locationData, by = c("var")) %>%
+        filter(var == locationVar) %>%
+        mutate(Value = as.numeric(Value))
+
+      if (targetValue$Value < targetValue$minValue | targetValue$Value > targetValue$maxValue) {
+
+        location_QC_report %>%
+          add_row(
+            var = locationVar,
+            error = "out of range"
+          )
+
+      }
+
+    },
+    warning = function(cond) {
+
+      return(
+        location_QC_report %>%
+          add_row(
+            var = locationVar,
+            error = "expected numeric"
+          )
+      )
+
+    })
+
+  } # close location_range_check
+
+  # function to check provided data are appropriate type (numeric, character)
+  location_type_check <- function(locationVar) {
+
+    targetValue <- locationQC %>%
+      filter(!is.na(class)) %>%
+      inner_join(locationData, by = c("var")) %>%
+      filter(var == locationVar)
+
+    if (targetValue[['class']] == 'numeric') {
+
+      tryCatch({
+
+        locationData %>%
+          filter(var == locationVar) %>%
+          mutate(Value = as.numeric(Value))
+
+        NULL
+
+      },
+      warning = function(cond) {
+
+        return(
+          location_QC_report %>%
+            add_row(
+              var = locationVar,
+              error = "expected numeric"
+            )
+        )
+
+      })
+
+    } else if (targetValue[['class']] == 'character') {
+
+      tryCatch({
+
+        locationData %>%
+          filter(var == locationVar) %>%
+          mutate(Value = as.character(Value))
+
+        NULL
+
+      },
+      warning = function(cond) {
+
+        return(
+          location_QC_report %>%
+            add_row(
+              var = locationVar,
+              error = "expected character"
+            )
+        )
+
+      })
+
+    } else {
+
+      NULL
+
+    } # close if character
+
+  } # close location_type_check
+
+  # map through range and type checks for location data
+  location_QC_report <- map_df(.x = locationQC %>% filter(!is.na(minValue)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
+                               .f = location_range_check)
+  location_QC_report <- map_df(.x = locationQC %>% filter(!is.na(class)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
+                               .f = location_type_check)
+
+  # report and exit if location QC errors detected
+  if (nrow(location_QC_report) > 0) {
+
+    location_QC_report <- location_QC_report %>%
+      group_by(var, error) %>%
+      distinct() %>%
+      mutate(
+        dataset = directoryName,
+        source = 'location'
+      ) %>%
+      select(dataset, source, var, error)
+
+    print(location_QC_report)
+    stop("location errors detected")
+
+  }
+
+  # END QC CHECK::location data
   # +++++++++++++++++++++++++++++++++++++++
 
 
