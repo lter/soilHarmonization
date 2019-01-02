@@ -480,6 +480,41 @@ key_update_v2 <- function(sheetName,
   }
 
 
+  # fix Excel date format imposed by openxlsx -------------------------------
+
+  # re-import location tab sheet
+  sheetLocation <- read.xlsx(xlsxFile = keyfileWorkbook,
+                             sheet = 'Location_data')
+
+  if (!is.null(sheetLocation[grepl('modification_date', sheetLocation[['var']]),][['Value']])) {
+
+    tryCatch({
+
+      rDate <- convertToDate(sheetLocation[grepl('modification_date', sheetLocation[['var']]),][['Value']])
+      rDate <- as.character(rDate)
+
+      writeData(wb = keyfileWorkbook,
+                sheet = 'Location_data',
+                x = rDate,
+                startCol = 1,
+                startRow = which(grepl('modification_date', sheetLocation[['var']])) + 1,
+                colNames = TRUE)
+
+    },
+    warning = function(cond) {
+
+      NULL
+
+    },
+    error = function(cond) {
+
+      NULL
+
+    })
+
+  }
+
+
   # fix formatting imposed by openxlsx --------------------------------------
 
   # create styles
