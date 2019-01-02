@@ -43,7 +43,8 @@
 
 data_homogenization <- function(directoryName, temporaryDirectory) {
 
-  # CHECK FOR REQUISITE PARAMETERS
+
+  # check for required input to function ------------------------------------
 
   # directoryName
   if (missing(directoryName)) {
@@ -59,16 +60,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # LOCAL OUTPUT DIRECTORY
 
   # a user-identified temporaryDirectory is required
-
   # ensure the provided temporaryDirectory has a trailing slash
   # os <- detect_os()
-
   # if (os %in% c('lin', 'mac')) {
-
-  if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
-    temporaryDirectory <- paste0(temporaryDirectory, "/")
-  }
-
   # } else if (os == 'win') {
   #
   #   if (stringr::str_extract(temporaryDirectory, ".$") != "\\") {
@@ -76,6 +70,11 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   #   }
   #
   # }
+
+  if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
+    temporaryDirectory <- paste0(temporaryDirectory, "/")
+  }
+
 
   # create the receiving directory if it does not exist; delete the contents if
   # it does exist
@@ -90,7 +89,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   }
 
 
-  # GOOGLE DRIVE DIRECTORY
+  # access Google Drive directory -------------------------------------------
 
   # access Google directory id for reference
   googleID <- googledrive::drive_get(directoryName) %>%
@@ -129,7 +128,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   locationData <- googlesheets::gs_read(keyFileToken, ws = 1)
   profileData <- googlesheets::gs_read(keyFileToken, ws = 2)
 
-  # LOCATION TAB QC
+
+  # key file location tab QC ------------------------------------------------
 
   # (1) confirm requisite input to location tab
   locationRequiredFields <- c(
@@ -149,11 +149,6 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   }
 
-
-  # lat long coordinates
-  # wait for Derek's code to address lat long
-
-
   # remove missing fields and add Google reference details to location
   locationData <- locationData %>%
     dplyr::filter(!is.na(Value)) %>%
@@ -165,7 +160,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     dplyr::filter(!is.na(header_name))
 
 
-  # GENERATE NOTE FILE (FROM THE KEY FILE)
+  # generate note file from key file input ----------------------------------
 
   # create a note name with path to output directory, name of key file + _HMGZD_NOTES.csv
   notesFileName <- paste0(tools::file_path_sans_ext(keyFileName), "_HMGZD_NOTES.csv")
@@ -193,9 +188,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       dplyr::select(source, Var_long, var, var_notes)
   )
 
-  # +++++++++++++++++++++++++++++++++++++++
-  # BEGIN STANDARDIZE UNITS::location data
-  # source('~/Dropbox/development/standardize_units_location.R')
+
+  # begin standardize units::location data ----------------------------------
 
   # location tab DATA containing units only
   locationDataUnits <- locationData %>%
@@ -231,12 +225,11 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     }
   }
 
-  # END STANDARDIZE UNITS::location data
+  # end standardize units::location data
   # +++++++++++++++++++++++++++++++++++++++
 
 
-  # +++++++++++++++++++++++++++++++++++++++
-  # BEGIN QC CHECK::location data
+  # QC check: key file location ---------------------------------------------
 
   # establish empty tibble to log location QC errors
   location_QC_report <- tibble(
@@ -365,11 +358,11 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   }
 
-  # END QC CHECK::location data
+  # end qc check::location data
   # +++++++++++++++++++++++++++++++++++++++
 
 
-  # IMPORT DATA
+  # import data file(s) -----------------------------------------------------
 
   # set import parameters
 
@@ -392,9 +385,6 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   if (exists('mvc1')) { missingValueCode = mvc1}
   if (exists('mvc2')) { missingValueCode = mvc2}
   if (exists('mvc1') && exists('mvc2')) { missingValueCode = c(mvc1, mvc2)}
-
-
-  # DATA FILE(S)
 
   # import all (data + key) files from google dir
   googleDirData <- lapply(dirFileNames,
@@ -452,9 +442,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   }
 
 
-  # +++++++++++++++++++++++++++++++++++++++
-  # BEGIN STANDARDIZE UNITS::profile data
-  # source('~/Dropbox/development/standardize_units_profile.R')
+  # begin standardize units::profile data -----------------------------------
 
   # profile tab DATA containing units only
   profileDataUnits <- profileData %>%
@@ -505,6 +493,90 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # END STANDARDIZE UNITS::profile data
   # +++++++++++++++++++++++++++++++++++++++
 
+
+  # QC check: key file profile ----------------------------------------------
+
+
+  profile_range_check <- function(frame) {
+
+    frame %>%
+      select(one_of(profileRanges)) %>%
+      summarise_all(funs(min), na.rm = TRUE) %>%
+      gather(key = "var", value = "min") %>%
+      inner_join(
+        frame %>%
+          select(one_of(profileRanges)) %>%
+          summarise_all(funs(max), na.rm = TRUE) %>%
+          gather(key = "var", value = "max"),
+        by = c('var')
+      ) %>%
+      inner_join(
+        profileQC %>%
+          select(var, minValue, maxValue),
+        by = c('var')
+      ) %>%
+      mutate(
+        min = as.numeric(min),
+        max = as.numeric(max)
+      ) %>%
+      filter(min < minValue | max > maxValue) %>%
+      mutate(error = "out of range") %>%
+      select(var, min, max, minValue, maxValue, error)
+
+  } # close profile_range_check
+
+  profile_range_report <- map_df(.x = googleDirData,
+                                 .f = profile_range_check)
+
+
+  # CHECK TYPE
+
+  # vector of all possible numeric vectors from QC template
+  numericProfileVars <- profileQC %>%
+    filter(class == 'numeric') %>%
+    pull(var)
+
+  profile_type_check <- function(frame) {
+
+    # data frame cols expected to be numeric
+    expectedNumeric <- frame %>%
+      select(one_of(numericProfileVars)) %>%
+      select_if(Negate(is.numeric))
+
+    # build tibble of non-numeric cols expected to be numeric
+    tibble(
+      var = colnames(expectedNumeric),
+      error = "expected numeric"
+    )
+
+  }
+
+  profile_type_report <- map_df(googleDirData, profile_type_check)
+
+  # report and exit if profile QC errors detected
+
+  profile_QC_report <- bind_rows(profile_range_report, profile_type_report)
+
+  if (nrow(profile_QC_report) > 0) {
+
+    profile_QC_report <- profile_QC_report  %>%
+      mutate(
+        dataset = directoryName,
+        source = 'profile'
+      ) %>%
+      select(dataset, source, var, error, min, min_allowed = minValue, max, max_allowed = maxValue)
+
+    print(profile_QC_report)
+    stop("profile errors detected")
+
+  }
+
+  # END QC CHECK::profile data
+  # +++++++++++++++++++++++++++++++++++++++
+
+
+  # prep final form and file output -----------------------------------------
+
   # generate wide data frame of location data
   locationDataWide <- locationData %>%
     dplyr::select(var, Value) %>%
@@ -547,7 +619,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     purrr::map(~ readr::write_csv(googleDirData[[.]], paste0(temporaryDirectory, ., ".csv")))
 
 
-  # UPLOAD OUTPUT TO GOOGLE DRIVE
+  # upload output to google drive -------------------------------------------
 
   # identify directory with files (not full.names=T)
   filesToUpload <- list.files(path = temporaryDirectory,

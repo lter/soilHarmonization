@@ -92,8 +92,19 @@
 #' @examples
 #' \dontrun{
 #'
+#'  If running on Aurora, the only relevant parameter is the name of the key
+#'  file to update.
+#'
 #'  key_update_v2('621_Key_Key_test')
-#'  key_update_v2('cap.557.Key_Key_master')
+#'
+#'  However, if not running on Aurora, all parameters must be passed, including
+#'  the path to a key file log that must exist.
+#'
+#'  key_update_v2(sheetName = 'cap.557.Key_Key_master',
+#'                keyFileDownloadPath = ~/Desktop/somdev/key_file_download/',
+#'                keyFileArchivePath = ~/Desktop/somdev/key_file_archive/',
+#'                keyFileUploadPath = ~/Desktop/somdev/key_file_upload/',
+#'                keyFileUpdateLogPath = '~/Desktop/keyUpdateLogFile.csv' )
 #'
 #' }
 #'
@@ -577,7 +588,7 @@ key_update_v2 <- function(sheetName,
 
   # save workbook to file
   saveWorkbook(wb = keyfileWorkbook,
-               file = paste0(keyFileUploadPath, sheetName, '_KEY_V2.xlsx'),
+               file = paste0(keyFileUploadPath, sheetName, '_KEY_V3.xlsx'),
                overwrite = TRUE)
 
 
@@ -590,7 +601,7 @@ key_update_v2 <- function(sheetName,
   keyFileParent <- keyFileDetails[["drive_resource"]][[1]][["parents"]][[1]]
 
   # upload to google drive
-  drive_upload(media = paste0(keyFileUploadPath, sheetName, '_KEY_V2.xlsx'),
+  drive_upload(media = paste0(keyFileUploadPath, sheetName, '_KEY_V3.xlsx'),
                path = as_id(keyFileParent),
                type = "spreadsheet")
 
@@ -599,12 +610,16 @@ key_update_v2 <- function(sheetName,
 
   # keyFileUpdateLogPath <- '/home/shares/lter-som/key_file_update_log.csv'
 
-  tibble(
-    keyFileName = sheetName,
-    keyFileDirectory = drive_get(as_id(keyFileParent))[['name']],
-    timestamp = Sys.time()
-  ) %>%
-    write_csv(path = keyFileUpdateLogPath,
-              append = TRUE)
+  if (!missing(keyFileUpdateLogPath)) {
+
+    tibble(
+      keyFileName = sheetName,
+      keyFileDirectory = drive_get(as_id(keyFileParent))[['name']],
+      timestamp = Sys.time()
+    ) %>%
+      write_csv(path = keyFileUpdateLogPath,
+                append = TRUE)
+
+  }
 
 }

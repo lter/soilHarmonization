@@ -100,12 +100,3 @@ do this as we need to document all changes, and a log file must exist.
 
 }
 }
-\examples{
-\dontrun{
-
- key_update_v2('621_Key_Key_test')
- key_update_v2('cap.557.Key_Key_master')
-
-}
-
-}
