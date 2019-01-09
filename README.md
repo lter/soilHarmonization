@@ -192,8 +192,58 @@ work outside of the Aurora environemnt, but the lter-som group **SHOULD
 NOT** do this as we need to document all changes, and a log file must
 exist.
 
+**Update 2019-01-09**: upon migrating Aurora to Ubuntu 18.04,
+approximately 20% of the calls to the Google API through the
+googlesheets and googledrive packages result in a curl error (`Error in
+curl::curl_fetch_memory(url, handle = handle) : Error in the HTTP2
+framing layer`). Given the heavy dependence of these functions on calls
+to the Google API, working in Aurora is now problematic. Instead, users
+should run the scripts from a local machine (preferably not running
+Ubuntu \>= 18.04). Paths to download, achive, and upload directories are
+required but the path to a log file is optional. When run locally, the
+fate of original key file location and profile tabs downloaded as type
+csv in the archive directory are at the discretion of the user.
+
 **running the key file update to version 2 function, example:**
+
+If run on Auora, paths to download, achive, and upload directories, and
+to a log file are provided to the function by default.
 
 ``` r
 key_update_v2('621_Key_Key_test')
+```
+
+However, if not running on Aurora, all directory-related parameters must
+be passed (the path to a key file log is optional).
+
+``` r
+key_update_v2(sheetName = 'cap.557.Key_Key_master',
+              keyFileDownloadPath = '~/Desktop/somdev/key_file_download/',
+              keyFileArchivePath = '~/Desktop/somdev/key_file_archive/',
+              keyFileUploadPath = '~/Desktop/somdev/key_file_upload/')
+```
+
+Example with path to keyFileUpdateLog - the log must exist at the
+specified location.
+
+``` r
+key_update_v2(sheetName = 'cap.557.Key_Key_master',
+              keyFileDownloadPath = '~/Desktop/somdev/key_file_download/',
+              keyFileArchivePath = '~/Desktop/somdev/key_file_archive/',
+              keyFileUploadPath = '~/Desktop/somdev/key_file_upload/',
+              keyFileUpdateLogPath = '~/Desktop/keyUpdateLogFile.csv' )
+```
+
+If writing to a log file, required column names include: keyFileName,
+keyFileDirectory, and timestamp. Following is an example of how to
+create a empty log file. Pass the path to the `keyFileUpdateLogPath`
+parameter in the key\_update\_v2 function.
+
+``` r
+tibble(
+  keyFileName = as.character(NA),
+  keyFileDirectory = as.character(NA),
+  timestamp = as.POSIXct(NA)
+) %>%
+write_csv(path = 'path/filename.csv', append = FALSE)
 ```

@@ -92,8 +92,27 @@
 #' @examples
 #' \dontrun{
 #'
+#'  If running on Aurora, the only relevant parameter is the name of the key
+#'  file to update.
+#'
 #'  key_update_v2('621_Key_Key_test')
-#'  key_update_v2('cap.557.Key_Key_master')
+#'
+#'  However, if not running on Aurora, all directory-related parameters must be
+#'  passed (the path to a key file log is optional).
+#'
+#'  key_update_v2(sheetName = 'cap.557.Key_Key_master',
+#'                keyFileDownloadPath = '~/Desktop/somdev/key_file_download/',
+#'                keyFileArchivePath = '~/Desktop/somdev/key_file_archive/',
+#'                keyFileUploadPath = '~/Desktop/somdev/key_file_upload/')
+#'
+#'  Example with path to keyFileUpdateLog - the log must exist at the specified
+#'  location.
+#'
+#'  key_update_v2(sheetName = 'cap.557.Key_Key_master',
+#'                keyFileDownloadPath = '~/Desktop/somdev/key_file_download/',
+#'                keyFileArchivePath = '~/Desktop/somdev/key_file_archive/',
+#'                keyFileUploadPath = '~/Desktop/somdev/key_file_upload/',
+#'                keyFileUpdateLogPath = '~/Desktop/keyUpdateLogFile.csv' )
 #'
 #' }
 #'
@@ -139,7 +158,9 @@ key_update_v2 <- function(sheetName,
                                  'key_version')
 
   if(all(key_v2_location_additions %in% sheetLocation$var)) {
+
     stop("the key file in this data set seems to already be at or above version 2")
+
   }
 
   # import profile tab sheet
@@ -207,14 +228,12 @@ key_update_v2 <- function(sheetName,
 
   # new location sheet metadata ---------------------------------------------
 
-  # set keyVersion to 2. older code to update conditionally not relevant since we
-  # are noting key versions (i.e., not key input iterations)
-
+  # set keyVersion to 2
   if (sheetLocation %>% filter(var == "key_version") %>% nrow() == 0) {
+
     keyVersion <- 2
-  } # else {
-  #   keyVersion <- as.integer(sheetLocation[sheetLocation$var == "key_version",]$Value + 1)
-  # }
+
+  }
 
   # get max row of location sheet
   locationMaxRow <- as.integer(nrow(sheetLocation))
@@ -410,24 +429,43 @@ key_update_v2 <- function(sheetName,
 
   update_duplicateNames_location <- function(varLongSearchTerm, newVarTerm) {
 
-    # if (!is.null(grep(varLongSearchTerm, sheetLocation$Var_long))) {
-    if (!is.null(which(varLongSearchTerm == sheetLocation$Var_long))) {
+    # check if the search term (from list of new names Var_long) can be found in
+    # all possible Var_long in sheetLocation. This check uses both a grep to
+    # compare these string values and equivalence (==) as one or the other fails
+    # inexpliably in some cases.
+    if (length(grep(varLongSearchTerm, sheetLocation$Var_long)) > 0 | length(which(varLongSearchTerm == sheetLocation$Var_long)) > 0) {
+
+      # use if-else flow to identify the starting row depending on whether string
+      # match identified by grep or equivalence
+      if (length(grep(varLongSearchTerm, sheetLocation$Var_long)) == 1) {
+
+        start_row <- grep(varLongSearchTerm, sheetLocation$Var_long)
+
+      } else if (length(which(varLongSearchTerm == sheetLocation$Var_long)) == 1) {
+
+        start_row <- which(varLongSearchTerm == sheetLocation$Var_long)
+
+      } else {
+
+        stop("error encountered when attempting to enforce unique names in location tab")
+
+      }
 
       writeData(wb = keyfileWorkbook,
                 sheet = 'Location_data',
                 x = newVarTerm,
                 startCol = 4,
-                startRow = which(varLongSearchTerm == sheetLocation$Var_long) + 1,
+                startRow = start_row + 1,
                 colNames = TRUE)
 
-    } # close if
+    } # close outer if
 
   } # close update_duplicateNames_location
 
   # walk through updates to location tab
   walk2(.x = newNamesLocation[['Var_long']], .y = newNamesLocation[['var_new_name']], .f = update_duplicateNames_location)
 
-  # LOCATION tab vars
+  # PROFILE tab vars
 
   # re-import profile tab sheet
   sheetProfile <- read.xlsx(xlsxFile = keyfileWorkbook,
@@ -472,11 +510,64 @@ key_update_v2 <- function(sheetName,
 
 
   if (numberDuplicateLocationVars > 0) {
+
+    print(
+      sheetLocation %>%
+        group_by(var) %>%
+        count() %>%
+        filter(n > 1)
+    )
+
     stop("key update failed, there are still duplicate location vars")
+
   }
 
   if (numberDuplicateProfileVars > 0) {
+
+    print(
+      sheetProfile %>%
+        group_by(var) %>%
+        count() %>%
+        filter(n > 1)
+    )
+
     stop("key update failed, there are still duplicate profile vars")
+
+  }
+
+
+  # fix Excel date format imposed by openxlsx -------------------------------
+
+  # re-import location tab sheet
+  sheetLocation <- read.xlsx(xlsxFile = keyfileWorkbook,
+                             sheet = 'Location_data')
+
+  if (!is.null(sheetLocation[grepl('modification_date', sheetLocation[['var']]),][['Value']])) {
+
+    tryCatch({
+
+      rDate <- convertToDate(sheetLocation[grepl('modification_date', sheetLocation[['var']]),][['Value']])
+      rDate <- as.character(rDate)
+
+      writeData(wb = keyfileWorkbook,
+                sheet = 'Location_data',
+                x = rDate,
+                startCol = 1,
+                startRow = which(grepl('modification_date', sheetLocation[['var']])) + 1,
+                colNames = TRUE)
+
+    },
+    warning = function(cond) {
+
+      NULL
+
+    },
+    error = function(cond) {
+
+      NULL
+
+    })
+
   }
 
 
@@ -538,8 +629,6 @@ key_update_v2 <- function(sheetName,
   # workbook from the R environment can be saved for eventual upload to Google
   # Drive
 
-  # keyFileUploadPath <- '/home/shares/lter-som/key_file_upload/'
-
   # save workbook to file
   saveWorkbook(wb = keyfileWorkbook,
                file = paste0(keyFileUploadPath, sheetName, '_KEY_V2.xlsx'),
@@ -564,12 +653,16 @@ key_update_v2 <- function(sheetName,
 
   # keyFileUpdateLogPath <- '/home/shares/lter-som/key_file_update_log.csv'
 
-  tibble(
-    keyFileName = sheetName,
-    keyFileDirectory = drive_get(as_id(keyFileParent))[['name']],
-    timestamp = Sys.time()
-  ) %>%
-    write_csv(path = keyFileUpdateLogPath,
-              append = TRUE)
+  if (!missing(keyFileUpdateLogPath)) {
+
+    tibble(
+      keyFileName = sheetName,
+      keyFileDirectory = drive_get(as_id(keyFileParent))[['name']],
+      timestamp = Sys.time()
+    ) %>%
+      write_csv(path = keyFileUpdateLogPath,
+                append = TRUE)
+
+  }
 
 }
