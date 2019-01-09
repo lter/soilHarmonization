@@ -100,3 +100,31 @@ do this as we need to document all changes, and a log file must exist.
 
 }
 }
+\examples{
+\dontrun{
+
+ If running on Aurora, the only relevant parameter is the name of the key
+ file to update.
+
+ key_update_v2('621_Key_Key_test')
+
+ However, if not running on Aurora, all directory-related parameters must be
+ passed (the path to a key file log is optional).
+
+ key_update_v2(sheetName = 'cap.557.Key_Key_master',
+               keyFileDownloadPath = '~/Desktop/somdev/key_file_download/',
+               keyFileArchivePath = '~/Desktop/somdev/key_file_archive/',
+               keyFileUploadPath = '~/Desktop/somdev/key_file_upload/')
+
+ Example with path to keyFileUpdateLog - the log must exist at the specified
+ location.
+
+ key_update_v2(sheetName = 'cap.557.Key_Key_master',
+               keyFileDownloadPath = '~/Desktop/somdev/key_file_download/',
+               keyFileArchivePath = '~/Desktop/somdev/key_file_archive/',
+               keyFileUploadPath = '~/Desktop/somdev/key_file_upload/',
+               keyFileUpdateLogPath = '~/Desktop/keyUpdateLogFile.csv' )
+
+}
+
+}
