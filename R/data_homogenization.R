@@ -496,6 +496,10 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # QC check: key file profile ----------------------------------------------
 
+  # isolate profile data vars where a range to check has been identified by Will and Derek
+  profileRanges <- profileQC %>%
+    filter(!is.na(minValue)) %>%
+    pull(var)
 
   profile_range_check <- function(frame) {
 
