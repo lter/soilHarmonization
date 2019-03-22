@@ -126,7 +126,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # extract location and profile tabs of key file
   locationData <- googlesheets::gs_read(keyFileToken, ws = 1)
-  profileData <- googlesheets::gs_read(keyFileToken, ws = 2)
+  profileData <- googlesheets::gs_read(keyFileToken, ws = 2) %>%
+    mutate_all(as.character)
 
 
   # key file location tab QC ------------------------------------------------
@@ -183,7 +184,11 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       dplyr::select(source, Var_long, var, var_notes),
     profileData %>%
       dplyr::filter(!is.na(Notes) | !is.na(Comment)) %>%
-      tidyr::unite(col = var_notes, Notes, Comment, sep = ";") %>%
+      mutate(var_notes = case_when(
+        !is.na(Notes) & !is.na(Comment) ~ paste0(Notes, "; ", Comment),
+        !is.na(Notes) & is.na(Comment) ~ Notes,
+        is.na(Notes) & !is.na(Comment) ~ Comment)
+      ) %>%
       dplyr::mutate(source = "profile") %>%
       dplyr::select(source, Var_long, var, var_notes)
   )
@@ -406,7 +411,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     dplyr::pull()
 
   # pull targeted vars from each data frame based on header_names in key file
-  googleDirData <- purrr::map(googleDirData, select, one_of(varsToKeep))
+  suppressWarnings(
+    googleDirData <- purrr::map(googleDirData, select, one_of(varsToKeep))
+  )
 
   # rename investigator names to key file names
   googleDirData <- lapply(googleDirData, function(frame) {
@@ -529,9 +536,10 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   } # close profile_range_check
 
-  profile_range_report <- map_df(.x = googleDirData,
-                                 .f = profile_range_check)
-
+  suppressWarnings(
+    profile_range_report <- map_df(.x = googleDirData,
+                                   .f = profile_range_check)
+  )
 
   # CHECK TYPE
 
@@ -555,7 +563,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   }
 
-  profile_type_report <- map_df(googleDirData, profile_type_check)
+  suppressWarnings(
+    profile_type_report <- map_df(googleDirData, profile_type_check)
+  )
 
   # report and exit if profile QC errors detected
 
