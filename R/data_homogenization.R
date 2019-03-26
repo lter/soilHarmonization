@@ -27,6 +27,7 @@
 #' @import tools
 #' @importFrom stringr str_extract
 #' @importFrom purrr map_df
+#' @import pander
 #'
 #' @return Homogenized data and notes in a local directory identified by the
 #'   user, and uploaded to the Google Drive source directory.
@@ -57,7 +58,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   }
 
 
-  # LOCAL OUTPUT DIRECTORY
+  # local output directory --------------------------------------------------
 
   # a user-identified temporaryDirectory is required
   # ensure the provided temporaryDirectory has a trailing slash
@@ -71,6 +72,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   #
   # }
 
+  # a user-identified temporaryDirectory is required
+  # ensure the provided temporaryDirectory has a trailing slash
   if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
     temporaryDirectory <- paste0(temporaryDirectory, "/")
   }
@@ -111,7 +114,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     pull(name)
 
 
-  # KEY FILE
+  # access and process key file ---------------------------------------------
 
   # Update 2018-12-28: data_harmonization requires a key file version 2
   if (!any(grepl("KEY_V2", dirFileNames, ignore.case = F))) {
@@ -163,9 +166,6 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # generate note file from key file input ----------------------------------
 
-  # create a note name with path to output directory, name of key file + _HMGZD_NOTES.csv
-  notesFileName <- paste0(tools::file_path_sans_ext(keyFileName), "_HMGZD_NOTES.csv")
-
   # capture notes from key file location and profile tabs
   notes <- dplyr::bind_rows(
     tibble(
@@ -194,6 +194,19 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   )
 
 
+  # empty tibble to house unit conversion notes -----------------------------
+
+  conversionNotes <- tibble(
+    source = as.character(),
+    var = as.character(),
+    Var_long = as.character(),
+    given_unit = as.character(),
+    target_unit = as.character(),
+    unit_conversion_factor = as.numeric(),
+    varNotes = 'units conversion applied'
+  )
+
+
   # begin standardize units::location data ----------------------------------
 
   # location tab DATA containing units only
@@ -216,25 +229,23 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     # standardize values per the units_conversion_table
     locationData[locationData$var == varValue,]['Value'] <- as.numeric(locationData[locationData$var == varValue,]['Value']) * LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor']
 
-    # add mention of conversions to notes
-    if (nrow(notes[notes$var == varValue,]) >= 1) {
-      notes <- notes %>%
-        dplyr::mutate(var_notes = replace(var_notes,
-                                          var == varValue,
-                                          paste0(var_notes, "; UNITS CONVERSION APPLIED: ", LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor'])))
-    } else {
-      notes <- notes %>%
-        tibble::add_row(source = 'location',
-                        var = varValue,
-                        var_notes = paste0("UNITS CONVERSION APPLIED: ", LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor']))
-    }
-  }
+    conversionNotes <- conversionNotes %>%
+      add_row(source = 'location',
+              var = varValue,
+              Var_long = LDU_UCL[LDU_UCL$var == varValue,]$Var_long.PD,
+              given_unit = LDU_UCL[LDU_UCL$var == varValue,]$givenUnit,
+              target_unit = LDU_UCL[LDU_UCL$var == varValue,]$unit_levels,
+              unit_conversion_factor = LDU_UCL[LDU_UCL$var == varValue,]$unitConversionFactor,
+              varNotes = 'units conversion applied'
+      )
+
+  } # close standardize location data units
 
   # end standardize units::location data
   # +++++++++++++++++++++++++++++++++++++++
 
 
-  # QC check: key file location ---------------------------------------------
+  # location data QC --------------------------------------------------------
 
   # establish empty tibble to log location QC errors
   location_QC_report <- tibble(
@@ -346,7 +357,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   location_QC_report <- map_df(.x = locationQC %>% filter(!is.na(class)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
                                .f = location_type_check)
 
-  # report and exit if location QC errors detected
+  # report if location QC errors detected
   if (nrow(location_QC_report) > 0) {
 
     location_QC_report <- location_QC_report %>%
@@ -358,8 +369,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       ) %>%
       select(dataset, source, var, error)
 
+    print("location QC errors dectected, see NOTES file")
     print(location_QC_report)
-    stop("location errors detected")
 
   }
 
@@ -401,7 +412,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   names(googleDirData) <- dirFileNames
 
   # as key file is already loaded, remove it from the list of data frames
-  # googleDirData <- googleDirData[-grepl("key", names(googleDirData), ignore.case = T)]
+  # googleDirData <- googleDirData[-grepl("key", names(googleDirData),
+  # ignore.case = T)]
   googleDirData <- googleDirData[!grepl("key", names(googleDirData), ignore.case = T)]
 
   # generate a vector of dataframe columns to keep from key file input to
@@ -474,34 +486,28 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
         googleDirData[[i]][[dataCol]] <- googleDirData[[i]][[dataCol]] * PDU_UCP[PDU_UCP$var == dataCol,][['unitConversionFactor']]
 
-        # add mention of conversions to notes
-        if (nrow(notes[notes$var == dataCol,]) >= 1) {
-          print(paste("mutate: ", dataCol))
+        conversionNotes <- conversionNotes %>%
+          add_row(source = 'profile',
+                  var = dataCol,
+                  Var_long = PDU_UCP[PDU_UCP$var == dataCol,]$Var_long.PD,
+                  given_unit = PDU_UCP[PDU_UCP$var == dataCol,]$givenUnit,
+                  target_unit = PDU_UCP[PDU_UCP$var == dataCol,]$unit_levels,
+                  unit_conversion_factor = PDU_UCP[PDU_UCP$var == dataCol,]$unitConversionFactor,
+                  varNotes = 'units conversion applied'
+          )
 
-          baseNote <- notes %>%
-            dplyr::filter(var == dataCol) %>%
-            dplyr::select(var_notes)
 
-          notes <- notes %>%
-            dplyr::mutate(var_notes = replace(var_notes,
-                                              var == dataCol,
-                                              paste0(baseNote, "; UNITS CONVERSION APPLIED: ", PDU_UCP[PDU_UCP$var == dataCol,]['unitConversionFactor'])))
-        } else {
-          print(paste("add_row: ", dataCol))
-          notes <- notes %>%
-            tibble::add_row(source = 'profile',
-                            var = dataCol,
-                            var_notes = paste0("UNITS CONVERSION APPLIED: ", PDU_UCP[PDU_UCP$var == dataCol,]['unitConversionFactor']))
-        }
-      }
-    }
-  }
+      } # close add mention of conversions to notes
+
+    } # close loop through PDU_UCP
+
+  } # close loop through googleDirData
 
   # END STANDARDIZE UNITS::profile data
   # +++++++++++++++++++++++++++++++++++++++
 
 
-  # QC check: key file profile ----------------------------------------------
+  # profile data QC ---------------------------------------------------------
 
   # isolate profile data vars where a range to check has been identified by Will and Derek
   profileRanges <- profileQC %>%
@@ -567,10 +573,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     profile_type_report <- map_df(googleDirData, profile_type_check)
   )
 
-  # report and exit if profile QC errors detected
-
   profile_QC_report <- bind_rows(profile_range_report, profile_type_report)
 
+  # report if profile QC errors detected
   if (nrow(profile_QC_report) > 0) {
 
     profile_QC_report <- profile_QC_report  %>%
@@ -580,8 +585,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       ) %>%
       select(dataset, source, var, error, min, min_allowed = minValue, max, max_allowed = maxValue)
 
+    print("profile errors detected, see NOTES file")
     print(profile_QC_report)
-    stop("profile errors detected")
+    # stop("profile errors detected")
 
   }
 
@@ -589,7 +595,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # +++++++++++++++++++++++++++++++++++++++
 
 
-  # prep final form and file output -----------------------------------------
+  # add location metadata and generate HMGZD filenames ---------------------
 
   # generate wide data frame of location data
   locationDataWide <- locationData %>%
@@ -609,7 +615,15 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # to each list item. If no attributes exist, add the ref attribute, else if
   # attributes already exist (should always be the case), append ref to existing
   # attrs.
-  for (i in 1:length(googleDirData)) if (is.null(attributes(googleDirData[[i]]))) {attributes(googleDirData[[i]]) <- list(ref=names(googleDirData)[i])} else {attributes(googleDirData[[i]]) <- c(attributes(googleDirData[[i]]), ref=names(googleDirData)[i])}
+  for (i in 1:length(googleDirData)) if (is.null(attributes(googleDirData[[i]]))) {
+
+    attributes(googleDirData[[i]]) <- list(ref=names(googleDirData)[i])
+
+  } else {
+
+    attributes(googleDirData[[i]]) <- c(attributes(googleDirData[[i]]), ref=names(googleDirData)[i])
+
+  }
 
   # 2. apply the ref attribute (the object name) as a column titled source_data;
   # move file identity details to the first few columns
@@ -618,25 +632,41 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       select(google_dir, data_file, google_id, everything())
   })
 
+  # store names of data files before processing
+  oeDataNames <- names(googleDirData)
+
   # rename files to include base name + indication of homogenization
   names(googleDirData) <- paste0(stringr::str_extract(names(googleDirData), "^[^\\.]*"), "_HMGZD")
 
 
-  # FILE OUTPUT
+  # generate and upload QC report -------------------------------------------
 
-  # notes to temporary location
-  readr::write_csv(notes, paste0(temporaryDirectory, notesFileName))
+  rmarkdown::render(input = system.file("homogenization_notes.Rmd", package = "soilHarmonization"),
+                    params = list(
+                      param_namesOE = sort(oeDataNames),
+                      param_namesHmgzd = sort(names(googleDirData)),
+                      param_notes = notes,
+                      param_locationQC = location_QC_report,
+                      param_profileRange = profile_range_report,
+                      param_profileType = profile_type_report
+                    ),
+                    output_file = paste0(temporaryDirectory, directoryName, "_HMGZD_NOTES.pdf"))
+
+  googledrive::drive_upload(paste0(temporaryDirectory, directoryName, "_HMGZD_NOTES.pdf"),
+                            path = googledrive::drive_get(googledrive::as_id(googleID)),
+                            type = "application/pdf")
+
+
+  # write data to file and upload to Google Drive ---------------------------
 
   # data to temporary location
   googleDirData %>%
     names(.) %>%
     purrr::map(~ readr::write_csv(googleDirData[[.]], paste0(temporaryDirectory, ., ".csv")))
 
-
-  # upload output to google drive -------------------------------------------
-
   # identify directory with files (not full.names=T)
   filesToUpload <- list.files(path = temporaryDirectory,
+                              pattern = "\\.csv$",
                               full.names = FALSE,
                               recursive = FALSE)
 

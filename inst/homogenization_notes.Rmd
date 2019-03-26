@@ -1,0 +1,89 @@
+---
+title: false
+output: 
+  pdf_document:
+params:
+  param_namesOE: "default"
+  param_namesHmgzd: "default"
+  param_notes: "default"
+  param_locationQC: "default"
+  param_profileRange: "default"
+  param_profileType: "default"
+---
+
+#### data homogenization processing summary and QC check results
+
+**files processed: **
+```{r filesProcessed, echo=FALSE, results='asis'}
+
+set.alignment('left')
+bind_rows(
+  tibble(
+    type = "provided data",
+    filename = params$param_namesOE
+  ),
+  tibble(
+    type = "homogenized data",
+    filename = params$param_namesHmgzd
+  )) %>% 
+pandoc.table(split.table = Inf, missing = "")
+```
+
+
+**notes included with key file:**
+```{r providedNotes, echo=FALSE, results='asis'}
+
+set.alignment('left')
+pandoc.table(params$param_notes, split.table = Inf, missing = "")
+```
+
+
+**location data QC results:**
+```{r locationDataCheck, echo=FALSE, results='asis'}
+
+if (nrow(params$param_locationQC) == 0) {
+  
+  cat("
+      location data checks passed")
+  
+} else {
+  
+  set.alignment('left')
+  pandoc.table(params$param_locationQC, split.table = Inf, missing = "")
+  
+}
+```
+
+
+**profile data: data range QC results:**
+```{r profileDataRangeCheck, echo=FALSE, results='asis'}
+
+if (nrow(params$param_profileRange) == 0) {
+  
+  cat("
+      profile data range checks passed")
+  
+} else {
+  
+  set.alignment('left')
+  pandoc.table(params$param_profileRange, split.table = Inf, missing = "")
+  
+}
+```
+
+
+**profile data: data type QC results:**
+```{r profileDataTypeCheck, echo=FALSE, results='asis'}
+
+if (nrow(params$param_profileType) == 0) {
+  
+  cat("
+      profile data type checks passed")
+  
+} else {
+  
+  set.alignment('left')
+  pandoc.table(params$param_profileType, split.table = Inf, missing = "")
+  
+}
+```
