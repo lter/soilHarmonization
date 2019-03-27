@@ -3,6 +3,7 @@ title: false
 output: 
   pdf_document:
 params:
+  param_directory: "default"
   param_namesOE: "default"
   param_namesHmgzd: "default"
   param_notes: "default"
@@ -11,9 +12,17 @@ params:
   param_profileType: "default"
 ---
 
-#### data homogenization processing summary and QC check results
+### data homogenization processing summary and QC check results: `r params$param_directory`
 
-**files processed: **
+**notes included with key file:**
+```{r providedNotes, echo=FALSE, results='asis'}
+
+set.alignment('left')
+pandoc.table(params$param_notes, split.table = Inf, missing = "")
+```
+
+
+**files processed:**
 ```{r filesProcessed, echo=FALSE, results='asis'}
 
 set.alignment('left')
@@ -30,15 +39,7 @@ pandoc.table(split.table = Inf, missing = "")
 ```
 
 
-**notes included with key file:**
-```{r providedNotes, echo=FALSE, results='asis'}
-
-set.alignment('left')
-pandoc.table(params$param_notes, split.table = Inf, missing = "")
-```
-
-
-**location data QC results:**
+**QC results: location data**
 ```{r locationDataCheck, echo=FALSE, results='asis'}
 
 if (nrow(params$param_locationQC) == 0) {
@@ -55,13 +56,12 @@ if (nrow(params$param_locationQC) == 0) {
 ```
 
 
-**profile data: data range QC results:**
+**QC results: profile data, data range**
 ```{r profileDataRangeCheck, echo=FALSE, results='asis'}
 
 if (nrow(params$param_profileRange) == 0) {
   
-  cat("
-      profile data range checks passed")
+  cat("\nprofile data range checks passed")
   
 } else {
   
@@ -72,13 +72,12 @@ if (nrow(params$param_profileRange) == 0) {
 ```
 
 
-**profile data: data type QC results:**
+**QC results: profile data, data type**
 ```{r profileDataTypeCheck, echo=FALSE, results='asis'}
 
 if (nrow(params$param_profileType) == 0) {
   
-  cat("
-      profile data type checks passed")
+  cat("\nprofile data type checks passed")
   
 } else {
   

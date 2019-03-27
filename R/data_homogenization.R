@@ -642,6 +642,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   rmarkdown::render(input = system.file("homogenization_notes.Rmd", package = "soilHarmonization"),
                     params = list(
+                      param_directory = directoryName,
                       param_namesOE = sort(oeDataNames),
                       param_namesHmgzd = sort(names(googleDirData)),
                       param_notes = notes,
