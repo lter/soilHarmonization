@@ -148,8 +148,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   if(any(is.na(locationData[locationData[['var']] %in% locationRequiredFields,]['Value']))) {
 
-    print(locationData[locationData[['var']] %in% locationRequiredFields,][c('var', 'Value')])
     stop("at least one required field in location tab is missing (see output for missing (NA) value)")
+    print(locationData[locationData[['var']] %in% locationRequiredFields,][c('var', 'Value')])
 
   }
 
@@ -369,7 +369,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       ) %>%
       select(dataset, source, var, error)
 
-    print("location QC errors dectected, see NOTES file")
+    warning("location QC errors dectected, see NOTES file")
     print(location_QC_report)
 
   }
@@ -585,9 +585,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       ) %>%
       select(dataset, source, var, error, min, min_allowed = minValue, max, max_allowed = maxValue)
 
-    print("profile errors detected, see NOTES file")
+    warning("profile errors detected, see NOTES file")
     print(profile_QC_report)
-    # stop("profile errors detected")
 
   }
 
