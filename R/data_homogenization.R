@@ -352,10 +352,12 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   } # close location_type_check
 
   # map through range and type checks for location data
-  location_QC_report <- map_df(.x = locationQC %>% filter(!is.na(minValue)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
-                               .f = location_range_check)
-  location_QC_report <- map_df(.x = locationQC %>% filter(!is.na(class)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
-                               .f = location_type_check)
+  location_range_report <- map_df(.x = locationQC %>% filter(!is.na(minValue)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
+                                  .f = location_range_check)
+  location_type_report <- map_df(.x = locationQC %>% filter(!is.na(class)) %>% inner_join(locationData, by = c("var")) %>% filter(!is.na(Value)) %>% pull(var),
+                                 .f = location_type_check)
+
+  location_QC_report <- bind_rows(location_range_report, location_type_report)
 
   # report if location QC errors detected
   if (nrow(location_QC_report) > 0) {
@@ -516,29 +518,35 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   profile_range_check <- function(frame) {
 
-    frame %>%
-      select(one_of(profileRanges)) %>%
-      summarise_all(funs(min), na.rm = TRUE) %>%
-      gather(key = "var", value = "min") %>%
-      inner_join(
-        frame %>%
-          select(one_of(profileRanges)) %>%
-          summarise_all(funs(max), na.rm = TRUE) %>%
-          gather(key = "var", value = "max"),
-        by = c('var')
-      ) %>%
-      inner_join(
-        profileQC %>%
-          select(var, minValue, maxValue),
-        by = c('var')
-      ) %>%
-      mutate(
-        min = as.numeric(min),
-        max = as.numeric(max)
-      ) %>%
-      filter(min < minValue | max > maxValue) %>%
-      mutate(error = "out of range") %>%
-      select(var, min, max, minValue, maxValue, error)
+    profileRangeData <- frame %>%
+      select(one_of(profileRanges))
+
+    if (ncol(profileRangeData) > 0) {
+
+      profileRangeData %>%
+        summarise_all(funs(min), na.rm = TRUE) %>%
+        gather(key = "var", value = "min") %>%
+        inner_join(
+          frame %>%
+            select(one_of(profileRanges)) %>%
+            summarise_all(funs(max), na.rm = TRUE) %>%
+            gather(key = "var", value = "max"),
+          by = c('var')
+        ) %>%
+        inner_join(
+          profileQC %>%
+            select(var, minValue, maxValue),
+          by = c('var')
+        ) %>%
+        mutate(
+          min = as.numeric(min),
+          max = as.numeric(max)
+        ) %>%
+        filter(min < minValue | max > maxValue) %>%
+        mutate(error = "out of range") %>%
+        select(var, min, max, minValue, maxValue, error)
+
+    } # close IF profile range vars to test are present
 
   } # close profile_range_check
 

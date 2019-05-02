@@ -62,6 +62,11 @@ package from CRAN):
 devtools::install_github("srearl/soilHarmonization")
 ```
 
+Users need also to have LaTeX installed. LaTeX is not an R package, and
+must be installed on the machine that will be running the script
+independently of R. The [LaTeX project](https://www.latex-project.org/)
+is a good resource for installing LaTeX.
+
 ### data-homogenization
 
 The `data_homogenization` script takes two input parameters:
@@ -187,10 +192,8 @@ be added to existing key file without information loss.
     with unique names.
 
 This workflow defaults to being run on Aurora with default file paths
-set to that environment. These paths can be altered for the function to
-work outside of the Aurora environemnt, but the lter-som group **SHOULD
-NOT** do this as we need to document all changes, and a log file must
-exist.
+set to that environment, though the paths can be altered for the
+function to work outside of the Aurora environment.
 
 **Update 2019-01-09**: upon migrating Aurora to Ubuntu 18.04,
 approximately 20% of the calls to the Google API through the
