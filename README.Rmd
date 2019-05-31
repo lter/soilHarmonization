@@ -121,6 +121,12 @@ This workflow defaults to being run on Aurora with default file paths set to
 that environment, though the paths can be altered for the function to work
 outside of the Aurora environment.
 
+**Update 2019-05-31**: Interaction with the Google API is becoming increasingly
+problematic. The script is no updated to not upload the updated key file version
+2 Google Drive. Instead, users should modify the key file written to the
+key_file_upload/ directory using LibreOffice, then upload manually to the
+appropriate Google Drive directory.
+
 **Update 2019-01-09**: upon migrating Aurora to Ubuntu 18.04, approximately 20%
 of the calls to the Google API through the googlesheets and googledrive packages
 result in a curl error (`Error in curl::curl_fetch_memory(url, handle = handle)
