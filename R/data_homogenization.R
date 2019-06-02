@@ -203,7 +203,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     given_unit = as.character(),
     target_unit = as.character(),
     unit_conversion_factor = as.numeric(),
-    varNotes = 'units conversion applied'
+    varNotes = 'converted'
   )
 
 
@@ -236,7 +236,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
               given_unit = LDU_UCL[LDU_UCL$var == varValue,]$givenUnit,
               target_unit = LDU_UCL[LDU_UCL$var == varValue,]$unit_levels,
               unit_conversion_factor = LDU_UCL[LDU_UCL$var == varValue,]$unitConversionFactor,
-              varNotes = 'units conversion applied'
+              varNotes = 'converted'
       )
 
   } # close standardize location data units
@@ -495,7 +495,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
                   given_unit = PDU_UCP[PDU_UCP$var == dataCol,]$givenUnit,
                   target_unit = PDU_UCP[PDU_UCP$var == dataCol,]$unit_levels,
                   unit_conversion_factor = PDU_UCP[PDU_UCP$var == dataCol,]$unitConversionFactor,
-                  varNotes = 'units conversion applied'
+                  varNotes = 'converted'
           )
 
 
@@ -646,6 +646,39 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   names(googleDirData) <- paste0(stringr::str_extract(names(googleDirData), "^[^\\.]*"), "_HMGZD")
 
 
+  # expanded conversionNotes with vars not converted ------------------------
+
+  # call the vars_not_converted function to document variables that are
+  # candidates for conversion but were not converted. Include this output (if
+  # any) with documentation regarding variables that were converted (i.e.,
+  # append to conversionNotes).
+
+  conversionNotes <- bind_rows(
+    conversionNotes,
+    vars_not_converted("location"),
+    vars_not_converted("profile")
+  ) %>%
+    rename(factor = unit_conversion_factor)
+
+  # output to screen
+  if (nrow(vars_not_converted("location")) > 0 | nrow(vars_not_converted("profile")) > 0) {
+
+    warning("some units not standaridized, see NOTES file")
+
+    if (nrow(vars_not_converted("location")) > 0 ) {
+
+      print(vars_not_converted("location"))
+
+    }
+
+    if (nrow(vars_not_converted("profile")) > 0 ) {
+
+      print(vars_not_converted("profile"))
+
+    }
+
+  }
+
   # generate and upload QC report -------------------------------------------
 
   rmarkdown::render(input = system.file("homogenization_notes.Rmd", package = "soilHarmonization"),
@@ -654,6 +687,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
                       param_namesOE = sort(oeDataNames),
                       param_namesHmgzd = sort(names(googleDirData)),
                       param_notes = notes,
+                      param_conversion = conversionNotes,
                       param_locationQC = location_QC_report,
                       param_profileRange = profile_range_report,
                       param_profileType = profile_type_report
