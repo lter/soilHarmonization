@@ -655,25 +655,65 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   conversionNotes <- bind_rows(
     conversionNotes,
-    vars_not_converted("location"),
-    vars_not_converted("profile")
+    vars_not_converted("location",
+                       locationDataUnits,
+                       unitsConversionLocation,
+                       LDU_UCL,
+                       profileDataUnits,
+                       unitsConversionProfile,
+                       PDU_UCP),
+    vars_not_converted("profile",
+                       locationDataUnits,
+                       unitsConversionLocation,
+                       LDU_UCL,
+                       profileDataUnits,
+                       unitsConversionProfile,
+                       PDU_UCP)
   ) %>%
     rename(factor = unit_conversion_factor)
 
   # output to screen
-  if (nrow(vars_not_converted("location")) > 0 | nrow(vars_not_converted("profile")) > 0) {
+
+  numLocVarsNotConverted <- nrow(vars_not_converted("location",
+                                                    locationDataUnits,
+                                                    unitsConversionLocation,
+                                                    LDU_UCL,
+                                                    profileDataUnits,
+                                                    unitsConversionProfile,
+                                                    PDU_UCP))
+  numProfVarsNotConverted <- nrow(vars_not_converted("profile",
+                                                     locationDataUnits,
+                                                     unitsConversionLocation,
+                                                     LDU_UCL,
+                                                     profileDataUnits,
+                                                     unitsConversionProfile,
+                                                     PDU_UCP))
+
+  if (numLocVarsNotConverted  > 0 | numProfVarsNotConverted  > 0) {
 
     warning("some units not standaridized, see NOTES file")
 
-    if (nrow(vars_not_converted("location")) > 0 ) {
+    if (numLocVarsNotConverted  > 0 ) {
 
-      print(vars_not_converted("location"))
+      print(vars_not_converted("location",
+                               locationDataUnits,
+                               unitsConversionLocation,
+                               LDU_UCL,
+                               profileDataUnits,
+                               unitsConversionProfile,
+                               PDU_UCP))
 
     }
 
-    if (nrow(vars_not_converted("profile")) > 0 ) {
+    if (numProfVarsNotConverted  > 0 ) {
 
-      print(vars_not_converted("profile"))
+      print(vars_not_converted("profile",
+                               locationDataUnits,
+                               unitsConversionLocation,
+                               LDU_UCL,
+                               profileDataUnits,
+                               unitsConversionProfile,
+                               PDU_UCP))
 
     }
 

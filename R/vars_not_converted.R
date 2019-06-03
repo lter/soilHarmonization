@@ -32,7 +32,13 @@
 #'
 #' @export
 
-vars_not_converted <- function(varType) {
+vars_not_converted <- function(varType,
+                               locationDataUnits,
+                               unitsConversionLocation,
+                               LDU_UCL,
+                               profileDataUnits,
+                               unitsConversionProfile,
+                               PDU_UCP) {
 
   if (varType == "location") {
 
