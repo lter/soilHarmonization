@@ -33,30 +33,27 @@
 #' @export
 
 vars_not_converted <- function(varType,
-                               locationDataUnits,
-                               unitsConversionLocation,
-                               LDU_UCL,
-                               profileDataUnits,
-                               unitsConversionProfile,
-                               PDU_UCP) {
+                               LDU = locationDataUnits,
+                               unitsReference = unitsConversions,
+                               joinedLocation = LDU_UCL,
+                               PDU = profileDataUnits,
+                               joinedProfile = PDU_UCP) {
 
   if (varType == "location") {
 
-    unitsType <- locationDataUnits
-    conversionType <- unitsConversionLocation
-    joinedUnits <- LDU_UCL
+    unitsType <- LDU
+    joinedUnits <- joinedLocation
     sourceType <- "location"
 
   } else {
 
-    unitsType <- profileDataUnits
-    conversionType <- unitsConversionProfile
-    joinedUnits <- PDU_UCP
+    unitsType <- PDU
+    joinedUnits <- joinedProfile
     sourceType <- "profile"
 
   }
 
-  varsNotConverted <- left_join(unitsType, conversionType,
+  varsNotConverted <- left_join(unitsType, unitsReference,
                                 by = c("var"),
                                 suffix = c(".PD", ".UT")) %>%
     dplyr::filter(

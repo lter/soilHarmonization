@@ -215,7 +215,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     dplyr::select(Value, unit_levels = Unit, Var_long, var)
 
   # join location DATA with units and corresponding vars in conversion table
-  LDU_UCL <- dplyr::left_join(locationDataUnits, unitsConversionLocation,
+  LDU_UCL <- dplyr::left_join(locationDataUnits, unitsConversions,
                               by = c("var", "unit_levels"),
                               suffix = c(".PD", ".UT")) %>%
     dplyr::filter(
@@ -471,7 +471,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     dplyr::select(header_name, unit_levels, Var_long, var)
 
   # join profile DATA with units and corresponding vars in conversion table
-  PDU_UCP <- dplyr::left_join(profileDataUnits, unitsConversionProfile,
+  PDU_UCP <- dplyr::left_join(profileDataUnits, unitsConversions,
                               by = c("var", "unit_levels"),
                               suffix = c(".PD", ".UT")) %>%
     dplyr::filter(
@@ -653,21 +653,9 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # any) with documentation regarding variables that were converted (i.e.,
   # append to conversionNotes).
 
-  locationVarsNotConverted <- vars_not_converted("location",
-                                                 locationDataUnits,
-                                                 unitsConversionLocation,
-                                                 LDU_UCL,
-                                                 profileDataUnits,
-                                                 unitsConversionProfile,
-                                                 PDU_UCP)
+  locationVarsNotConverted <- vars_not_converted(varType = "location")
 
-  profileVarsNotConverted <- vars_not_converted("profile",
-                                                locationDataUnits,
-                                                unitsConversionLocation,
-                                                LDU_UCL,
-                                                profileDataUnits,
-                                                unitsConversionProfile,
-                                                PDU_UCP)
+  profileVarsNotConverted <- vars_not_converted(varType = "profile")
 
   conversionNotes <- bind_rows(
     conversionNotes,
