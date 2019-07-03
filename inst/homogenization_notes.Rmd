@@ -7,6 +7,7 @@ params:
   param_namesOE: "default"
   param_namesHmgzd: "default"
   param_notes: "default"
+  param_conversion: "default"
   param_locationQC: "default"
   param_profileRange: "default"
   param_profileType: "default"
@@ -36,6 +37,17 @@ bind_rows(
     filename = params$param_namesHmgzd
   )) %>% 
 pandoc.table(split.table = Inf, missing = "")
+```
+
+
+**variable conversion**
+```{r variableConversion, echo=FALSE, results='asis'}
+
+# kable(params$param_conversion, format = "pandoc", booktabs = T) %>%
+#   kable_styling(full_width = TRUE)
+
+  set.alignment('left')
+  pandoc.table(params$param_conversion, split.table = Inf, missing = "")
 ```
 
 

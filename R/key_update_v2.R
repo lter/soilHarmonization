@@ -637,16 +637,21 @@ key_update_v2 <- function(sheetName,
 
   # upload revised key file to google drive --------------------------------
 
+  # Because of increasing incompatibilities with Google Drive, the steps to
+  # (automatically) upload the new key file version 2 are disabled. The user
+  # should edit the key file version 2 locally with LibreOffice then manually
+  # upload it to Google Drive.
+
   # retrieve key file details
-  keyFileDetails <- drive_get(sheetName)
+  # keyFileDetails <- drive_get(sheetName)
 
   # retrieve key file parent directory
-  keyFileParent <- keyFileDetails[["drive_resource"]][[1]][["parents"]][[1]]
+  # keyFileParent <- keyFileDetails[["drive_resource"]][[1]][["parents"]][[1]]
 
   # upload to google drive
-  drive_upload(media = paste0(keyFileUploadPath, sheetName, '_KEY_V2.xlsx'),
-               path = as_id(keyFileParent),
-               type = "spreadsheet")
+  # drive_upload(media = paste0(keyFileUploadPath, sheetName, '_KEY_V2.xlsx'),
+  #              path = as_id(keyFileParent),
+  #              type = "spreadsheet")
 
 
   # log upversion -----------------------------------------------------------
