@@ -41,19 +41,19 @@ vars_not_converted <- function(varType,
 
   if (varType == "location") {
 
-    unitsType <- LDU
-    joinedUnits <- joinedLocation
+    unitsType <- get("locationDataUnits")
+    joinedUnits <- get("LDU_UCL")
     sourceType <- "location"
 
   } else {
 
-    unitsType <- PDU
-    joinedUnits <- joinedProfile
+    unitsType <- get("profileDataUnits")
+    joinedUnits <- get("PDU_UCP")
     sourceType <- "profile"
 
   }
 
-  varsNotConverted <- left_join(unitsType, unitsReference,
+  varsNotConverted <- left_join(unitsType, get("unitsConversions"),
                                 by = c("var"),
                                 suffix = c(".PD", ".UT")) %>%
     dplyr::filter(
