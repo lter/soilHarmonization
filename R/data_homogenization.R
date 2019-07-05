@@ -658,10 +658,10 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
                                                  joinedUnits = LDU_UCL,
                                                  unitsConversionReference = unitsConversions)
 
-  locationVarsNotConverted <- vars_not_converted(varType = "profile",
-                                                 unitsSource = profileDataUnits,
-                                                 joinedUnits = PDU_UCP,
-                                                 unitsConversionReference = unitsConversions)
+  profileVarsNotConverted <- vars_not_converted(varType = "profile",
+                                                unitsSource = profileDataUnits,
+                                                joinedUnits = PDU_UCP,
+                                                unitsConversionReference = unitsConversions)
 
   conversionNotes <- bind_rows(
     conversionNotes,
