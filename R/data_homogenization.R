@@ -653,9 +653,15 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # any) with documentation regarding variables that were converted (i.e.,
   # append to conversionNotes).
 
-  locationVarsNotConverted <- vars_not_converted(varType = "location")
+  locationVarsNotConverted <- vars_not_converted(varType = "location",
+                                                 unitsSource = locationDataUnits,
+                                                 joinedUnits = LDU_UCL,
+                                                 unitsConversionReference = unitsConversions)
 
-  profileVarsNotConverted <- vars_not_converted(varType = "profile")
+  locationVarsNotConverted <- vars_not_converted(varType = "profile",
+                                                 unitsSource = profileDataUnits,
+                                                 joinedUnits = PDU_UCP,
+                                                 unitsConversionReference = unitsConversions)
 
   conversionNotes <- bind_rows(
     conversionNotes,
