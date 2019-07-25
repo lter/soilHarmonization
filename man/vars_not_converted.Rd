@@ -5,7 +5,9 @@
 \title{Catalog location- and profile-data variables that are candidates for
 units conversion but for which a units conversion was not applied.}
 \usage{
-vars_not_converted(varType)
+vars_not_converted(varType, LDU = locationDataUnits,
+  unitsReference = unitsConversions, joinedLocation = LDU_UCL,
+  PDU = profileDataUnits, joinedProfile = PDU_UCP)
 }
 \arguments{
 \item{varType}{The type of variable ("location", "profile") passed as a
