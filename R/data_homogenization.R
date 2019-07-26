@@ -108,7 +108,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       file_ext(name) != "zip", # remove zipped files
       file_ext(name) != "pdf", # remove PDF files
       file_ext(name) != "html", # remove html files
-      file_ext(name) != "txt" # remove txt files
+      file_ext(name) != "txt", # remove txt files
+      file_ext(name) != "R" # remove R files
     ) %>%
     select(name) %>%
     pull(name)
