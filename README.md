@@ -43,8 +43,9 @@ set.
 
 ### application
 
-…need content about accessing and creating a key
-    file…
+under construction: instructions for adding appropriate metadata to a
+key translation
+    file.
 
 ### navigation
 
@@ -73,12 +74,13 @@ The `data_homogenization` script takes two input parameters:
 `directoryName` and `temporaryDirectory`. `directoryName` is quoted the
 name of the target Google Drive directory where the data and key file
 are located. Note that you must have read + write access to the target
-directory. `temporaryDirectory` is the quoted name and path of a
-directory on your local computer where the script will write output
+directory, and all **data files must be Google Sheets** (convert from
+Excel as necessary). `temporaryDirectory` is the quoted name and path of
+a directory on your local computer where the script will write output
 before uploading to the target Google Drive directory from which the
-data and key file were accessed. Script output includes a combined notes
-file and homogenized versions of the all provided data, each appended
-with *HMGZD* in the file names.
+data and key file were accessed. Script output includes a notes file and
+homogenized versions of the all provided data, each appended with
+*HMGZD* in the file names.
 
 Special notes about the `temporarydirectory`:
 
@@ -100,6 +102,10 @@ data_homogenization(directoryName = 'Luquillo elevation gradient',
 ```
 
 ### homogenization-QC
+
+Revised versions of the `data-homogenization` function feature
+quality-control checks. As a result, the `homogenization_QC` function is
+available but largely unnecessary.
 
 Following successful application of the `data_homogenization` script, a
 quality-control function (`homogenization_QC`) may be used to assess
