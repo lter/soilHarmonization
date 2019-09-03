@@ -116,7 +116,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     dplyr::pull(id)
 
   # list files in Google directory
-  dirFileList <- googledrive::drive_ls(path = directoryName)
+  dirFileList <- googledrive::drive_ls(path = downloadName)
 
   # isolate names from Google directory
   dirFileNames <- dirFileList %>%
