@@ -94,8 +94,25 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # access Google Drive directory -------------------------------------------
 
+  # R <--> Google interaction is sometimes thwarted by error detailed below.
+  # Passing the URL to the key file instead of the name circumvents this error.
+
+  # Error in add_id_path(nodes, root_id = root_id, leaf = leaf) :
+  #   !anyDuplicated(nodes$id) is not TRUE`
+
+  if (grepl("https://", directoryName)) {
+
+    downloadName <- directoryName
+    directoryName <- drive_get(directoryName)$name
+
+  } else {
+
+    downloadName <- directoryName
+
+  }
+
   # access Google directory id for reference
-  googleID <- googledrive::drive_get(directoryName) %>%
+  googleID <- googledrive::drive_get(downloadName) %>%
     dplyr::pull(id)
 
   # list files in Google directory
