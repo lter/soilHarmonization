@@ -61,8 +61,8 @@
 #'
 #'  ```
 #'
-#' @param sheetName name of key file in Google Drive to update with version 2
-#'   changes
+#' @param sheetName name of or https path to key file in Google Drive to update
+#'   with version 2 changes
 #' @param keyFileDownloadPath a intermediary directory to where the key file
 #'   from Google Drive may be downloaded for importing into the R environment
 #' @param keyFileArchivePath directory to where csv versions of the location and
@@ -124,6 +124,26 @@ key_update_v2 <- function(sheetName,
                           keyFileUploadPath = '/home/shares/lter-som/key_file_upload/',
                           keyFileUpdateLogPath = '/home/shares/lter-som/key_file_update_log.csv') {
 
+
+# identify sheetName v downloadName ---------------------------------------
+
+  # R <--> Google interaction is sometimes thwarted by error detailed below.
+  # Passing the URL to the key file instead of the name circumvents this error.
+
+  # Error in add_id_path(nodes, root_id = root_id, leaf = leaf) :
+  #   !anyDuplicated(nodes$id) is not TRUE`
+
+  if (grepl("https://", sheetName)) {
+
+    downloadName <- sheetName
+    sheetName <- drive_get(sheetName)$name
+
+  } else {
+
+    downloadName <- sheetName
+
+  }
+
   # access Google Drive sheet -----------------------------------------------
 
   # keyFileDownloadPath is a intermediary directory to where the key file from
@@ -131,7 +151,7 @@ key_update_v2 <- function(sheetName,
 
   # keyFileDownloadPath <- '/home/shares/lter-som/key_file_download/'
 
-  drive_download(file = sheetName,
+  drive_download(file = downloadName,
                  path = paste0(keyFileDownloadPath, sheetName, '.xlsx'),
                  overwrite = TRUE)
 
