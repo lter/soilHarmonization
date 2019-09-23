@@ -26,9 +26,9 @@
 #'   unitsConversions.rda file to this package as an unexported R file. See
 #'   units_conversion_update.R in this package.
 #'
-#' @note The workflow is included and documneted as part of the
+#' @note The workflow is included and documeneted as part of the
 #'   soilHarmonization package but is to be run sporadically and, at least at
-#'   this time, not by other uses thus is saved to the root directory of the
+#'   this time, not by other users thus is saved to the root directory of the
 #'   package so that it is not loaded (per
 #'   https://stackoverflow.com/questions/13182634/rbuildignore-and-excluding-directories)
 #'
@@ -75,4 +75,4 @@ unitsConversions <- bind_rows(
     select(unit_levels,Var_long,var,givenUnit,unitConversionFactor)
 )
 
-# save(unitsConversions, file="data/unitsConversions.rda")
+save(unitsConversions, file="data/unitsConversions.rda")
