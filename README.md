@@ -60,7 +60,7 @@ Install the current version from GitHub (after installing the `devtools`
 package from CRAN):
 
 ``` r
-devtools::install_github("srearl/soilHarmonization")
+devtools::install_github("lter/soilHarmonization")
 ```
 
 Users need also to have LaTeX installed. LaTeX is not an R package, and

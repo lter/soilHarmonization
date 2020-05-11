@@ -5,15 +5,17 @@
 \title{Update existing key file to version 2 with additional information and
 new features}
 \usage{
-key_update_v2(sheetName,
+key_update_v2(
+  sheetName,
   keyFileDownloadPath = "/home/shares/lter-som/key_file_download/",
   keyFileArchivePath = "/home/shares/lter-som/key_file_archive/",
   keyFileUploadPath = "/home/shares/lter-som/key_file_upload/",
-  keyFileUpdateLogPath = "/home/shares/lter-som/key_file_update_log.csv")
+  keyFileUpdateLogPath = "/home/shares/lter-som/key_file_update_log.csv"
+)
 }
 \arguments{
-\item{sheetName}{name of key file in Google Drive to update with version 2
-changes}
+\item{sheetName}{name of or https path to key file in Google Drive to update
+with version 2 changes}
 
 \item{keyFileDownloadPath}{a intermediary directory to where the key file
 from Google Drive may be downloaded for importing into the R environment}
