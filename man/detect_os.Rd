@@ -7,9 +7,9 @@
 detect_os()
 }
 \value{
-\preformatted{\item{win}{Windows OS}
-\item{mac}{Mac OS}
-\item{lin}{Linux OS}
+\preformatted{\\item\{win\}\{Windows OS\}
+\\item\{mac\}\{Mac OS\}
+\\item\{lin\}\{Linux OS\}
 }
 }
 \description{

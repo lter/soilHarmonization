@@ -35,7 +35,7 @@ Install the current version from GitHub (after installing the `devtools` package
 
 ```{r load package, eval=FALSE}
 
-devtools::install_github("srearl/soilHarmonization")
+devtools::install_github("lter/soilHarmonization")
 ```
 
 Users need also to have LaTeX installed. LaTeX is not an R package, and must be installed on the machine that will be running the script independently of R. The [LaTeX project](https://www.latex-project.org/) is a good resource for installing LaTeX.

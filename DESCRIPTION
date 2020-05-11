@@ -2,7 +2,24 @@ Package: soilHarmonization
 Type: Package
 Title: Homogenize LTER Soil Organic Matter Working Group data and notes
 Version: 0.1.0
-Authors@R: person("S", "Earl", email = "stevan.earl@asu.edu", role = c("aut", "cre"))
+Authors@R: 
+  c(
+    person(given = "Stevan",
+           family = "Earl",
+           email = "stevan.earl@asu.edu",
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCiD = "https://orcid.org/0000-0002-4465-452X")),
+    person(given = "Derek",
+           family = "Pierson",
+           email = "piersond@oregonstate.edu",
+           role = c("aut"),
+           comment = c(ORCiD = "https://orcid.org/0000-0003-3413-1693")),
+    person(given = "William",
+           family = "Wieder",
+           email = "wwieder@ucar.edu",
+           role = c("aut"),
+           comment = c(ORCiD = "https://orcid.org/0000-0001-7116-1985"))
+  )
 Maintainer: The package maintainer <stevan.earl@asu.edu>
 Description: Imports data and a key
     translation file from a Google Directory that the user is able to access.
@@ -12,7 +29,7 @@ Description: Imports data and a key
     that are also uploaded to the Google Directory identified by the user as
     containing the source data and key translation file. Modified data are
     appeneded with the string 'HMGZD'.
-License: CC0
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -32,4 +49,4 @@ Imports:
     rmarkdown,
     openxlsx
 Remotes: awalker89/openxlsx
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
