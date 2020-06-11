@@ -7,7 +7,8 @@
 data_homogenization(directoryName, temporaryDirectory)
 }
 \arguments{
-\item{directoryName}{The quoted name of the Google Drive directory containing data and a key translation file}
+\item{directoryName}{The URL of the Google Drive directory containing data
+and a key translation file}
 
 \item{temporaryDirectory}{The quoted path and name of a temporary directory
 on the user's local computer for storing script output. The directory does
@@ -23,14 +24,13 @@ The function data_homogonization imports data and a key
 translation file from a Google Directory that the user is able to access.
 Data are homogenized to feature common header names and units, and
 dataset-level notes appended to each data file. Output includes
-standardized data and notes to a local directory on the user's computer
+standardized data and notes to a local directory on the user"s computer
 that are also uploaded to the Google Directory identified by the user as
 containing the source data and key translation file. Modified data are
-appeneded with the string 'HMGZD'.
+appeneded with the string "HMGZD".
 }
 \note{
-data_homogonization relies on the helper functions detect_os and
-sheet_download.
+data_homogonization relies on the helper function sheet_download.
 }
 \examples{
 \dontrun{

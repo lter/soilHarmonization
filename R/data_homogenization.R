@@ -7,12 +7,12 @@
 #'   standardized data and notes to a local directory on the user's computer
 #'   that are also uploaded to the Google Directory identified by the user as
 #'   containing the source data and key translation file. Modified data are
-#'   appeneded with the string 'HMGZD'.
+#'   appeneded with the string "HMGZD".
 #'
-#' @note data_homogonization relies on the helper functions detect_os and
-#'   sheet_download.
+#' @note data_homogonization relies on the helper function sheet_download.
 #'
-#' @param directoryName The quoted name of the Google Drive directory containing data and a key translation file
+#' @param directoryName The URL of the Google Drive directory containing data
+#'   and a key translation file
 #' @param temporaryDirectory The quoted path and name of a temporary directory
 #'   on the user's local computer for storing script output. The directory does
 #'   not have to exist. The directory should end with a forward slash (Mac,
@@ -23,8 +23,8 @@
 #' @import readr
 #' @import tibble
 #' @import googledrive
-#' @import googlesheets
 #' @import tools
+#' @importFrom googlesheets4 read_sheet
 #' @importFrom stringr str_extract
 #' @importFrom purrr map_df
 #' @import pander
@@ -62,18 +62,6 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # a user-identified temporaryDirectory is required
   # ensure the provided temporaryDirectory has a trailing slash
-  # os <- detect_os()
-  # if (os %in% c('lin', 'mac')) {
-  # } else if (os == 'win') {
-  #
-  #   if (stringr::str_extract(temporaryDirectory, ".$") != "\\") {
-  #     temporaryDirectory <- paste0(temporaryDirectory, "\\")
-  #   }
-  #
-  # }
-
-  # a user-identified temporaryDirectory is required
-  # ensure the provided temporaryDirectory has a trailing slash
   if (stringr::str_extract(temporaryDirectory, ".$") != "/") {
     temporaryDirectory <- paste0(temporaryDirectory, "/")
   }
@@ -93,12 +81,6 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
 
   # access Google Drive directory -------------------------------------------
-
-  # R <--> Google interaction is sometimes thwarted by error detailed below.
-  # Passing the URL to the key file instead of the name circumvents this error.
-
-  # Error in add_id_path(nodes, root_id = root_id, leaf = leaf) :
-  #   !anyDuplicated(nodes$id) is not TRUE`
 
   if (grepl("https://", directoryName)) {
 
@@ -143,39 +125,45 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # isolate key file, and extract details in location and profile tabs
   keyFileName <- grep("KEY_V2", dirFileNames, ignore.case = F, value = T)
-  keyFileToken <- googlesheets::gs_title(keyFileName)
+  keyFileToken <- dirFileList[dirFileList$name == keyFileName, ]$id
 
   # extract location and profile tabs of key file
-  locationData <- googlesheets::gs_read(keyFileToken, ws = 1)
-  profileData <- googlesheets::gs_read(keyFileToken, ws = 2) %>%
-    mutate_all(as.character)
+  locationData <- googlesheets4::read_sheet(
+    keyFileToken,
+    sheet = 1,
+    col_types = "c")
+
+  profileData <- googlesheets4::read_sheet(
+    keyFileToken,
+    sheet = 2) %>%
+  mutate_all(as.character)
 
 
   # key file location tab QC ------------------------------------------------
 
   # (1) confirm requisite input to location tab
   locationRequiredFields <- c(
-    'curator_PersonName',
-    'curator_organization',
-    'curator_email',
-    'time_series',
-    'gradient',
-    'experiments',
-    'merge_align'
+    "curator_PersonName",
+    "curator_organization",
+    "curator_email",
+    "time_series",
+    "gradient",
+    "experiments",
+    "merge_align"
   )
 
-  if(any(is.na(locationData[locationData[['var']] %in% locationRequiredFields,]['Value']))) {
+  if (any(is.na(locationData[locationData[["var"]] %in% locationRequiredFields,]["Value"]))) {
 
     stop("at least one required field in location tab is missing (see output for missing (NA) value)")
-    print(locationData[locationData[['var']] %in% locationRequiredFields,][c('var', 'Value')])
+    print(locationData[locationData[["var"]] %in% locationRequiredFields,][c("var", "Value")])
 
   }
 
   # remove missing fields and add Google reference details to location
   locationData <- locationData %>%
     dplyr::filter(!is.na(Value)) %>%
-    tibble::add_row(Value = googleID, var = 'google_id') %>%
-    tibble::add_row(Value = directoryName, var = 'google_dir')
+    tibble::add_row(Value = googleID, var = "google_id") %>%
+    tibble::add_row(Value = directoryName, var = "google_dir")
 
   # remove missing fields from profile
   profileData <- profileData %>%
@@ -193,7 +181,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       var_notes = directoryName
     ),
     locationData %>%
-      filter(var %in% c('network', 'site_code', 'location_name')) %>%
+      filter(var %in% c("network", "site_code", "location_name")) %>%
       dplyr::mutate(source = "location") %>%
       dplyr::select(source, Var_long, var, var_notes = Value),
     locationData %>%
@@ -221,7 +209,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     given_unit = as.character(),
     target_unit = as.character(),
     unit_conversion_factor = as.numeric(),
-    varNotes = 'converted'
+    varNotes = "converted"
   )
 
 
@@ -245,10 +233,10 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   for (varValue in c(LDU_UCL$var)) {
 
     # standardize values per the units_conversion_table
-    locationData[locationData$var == varValue,]['Value'] <- as.numeric(locationData[locationData$var == varValue,]['Value']) * LDU_UCL[LDU_UCL$var == varValue,]['unitConversionFactor']
+    locationData[locationData$var == varValue,]["Value"] <- as.numeric(locationData[locationData$var == varValue,]["Value"]) * LDU_UCL[LDU_UCL$var == varValue,]["unitConversionFactor"]
 
     conversionNotes <- conversionNotes %>%
-      add_row(source = 'location',
+      add_row(source = "location",
               var = varValue,
               Var_long = LDU_UCL[LDU_UCL$var == varValue,]$Var_long.PD,
               given_unit = LDU_UCL[LDU_UCL$var == varValue,]$givenUnit,
@@ -315,7 +303,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       inner_join(locationData, by = c("var")) %>%
       filter(var == locationVar)
 
-    if (targetValue[['class']] == 'numeric') {
+    if (targetValue[["class"]] == "numeric") {
 
       tryCatch({
 
@@ -338,7 +326,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
       })
 
-    } else if (targetValue[['class']] == 'character') {
+    } else if (targetValue[["class"]] == "character") {
 
       tryCatch({
 
@@ -385,7 +373,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       distinct() %>%
       mutate(
         dataset = directoryName,
-        source = 'location'
+        source = "location"
       ) %>%
       select(dataset, source, var, error)
 
@@ -405,28 +393,35 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # Isolate rows to skip from locationData for data import. This was originally
   # intended to be an input as to the number of rows to skip but it seems to
   # have been interpreted by users as the row number of the header.
-  if(length(locationData[locationData$var == 'header_row',]$var) == 1) {
-    skipRows = as.numeric(locationData[locationData$var == 'header_row',]$Value) - 1
+  if (length(locationData[locationData$var == "header_row",]$var) == 1) {
+
+    skipRows = as.numeric(locationData[locationData$var == "header_row",]$Value) - 1
+
   } else {
+
     skipRows = 0
+
   }
 
   # isolate missing value codes from locationData for data import
-  if (length(locationData[locationData$var == 'NA_1',]$var) == 1) {
-    mvc1 = locationData[locationData$var == 'NA_1',]$Value }
-  if (length(locationData[locationData$var == 'NA_2',]$var) == 1) {
-    mvc2 = locationData[locationData$var == 'NA_2',]$Value }
+  if (length(locationData[locationData$var == "NA_1",]$var) == 1) {
+
+    mvc1 = locationData[locationData$var == "NA_1",]$Value }
+
+  if (length(locationData[locationData$var == "NA_2",]$var) == 1) {
+
+    mvc2 = locationData[locationData$var == "NA_2",]$Value }
 
   missingValueCode = "NA"
-  if (exists('mvc1')) { missingValueCode = mvc1}
-  if (exists('mvc2')) { missingValueCode = mvc2}
-  if (exists('mvc1') && exists('mvc2')) { missingValueCode = c(mvc1, mvc2)}
+  if (exists("mvc1")) { missingValueCode = mvc1 }
+  if (exists("mvc2")) { missingValueCode = mvc2 }
+  if (exists("mvc1") && exists("mvc2")) { missingValueCode = c(mvc1, mvc2) }
 
   # import all (data + key) files from google dir
-  googleDirData <- lapply(dirFileNames,
-                          sheet_download,
-                          missingValueCode = missingValueCode,
-                          skipRows = skipRows)
+  googleDirData <- lapply(dirFileList[dirFileList$name %in% dirFileNames, ]$id,
+    sheet_download,
+    missingValueCode = missingValueCode,
+    skipRows = skipRows)
 
   # add filenames
   names(googleDirData) <- dirFileNames
@@ -454,29 +449,29 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # add experiment and treatment units to data files
 
-  # generate a vector of ALL POSSIBLE experiment and treatment var names from the
-  # key file
+  # generate a vector of ALL POSSIBLE experiment and treatment var names from
+  # the key file
   experimentTreatmentVarSet <- c(
-    'L1',
-    'L2',
-    'L3',
-    'L4',
-    'L5',
-    'L6',
-    'tx_L1',
-    'tx_L2',
-    'tx_L3',
-    'tx_L4',
-    'tx_L5',
-    'tx_L6'
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L6",
+    "tx_L1",
+    "tx_L2",
+    "tx_L3",
+    "tx_L4",
+    "tx_L5",
+    "tx_L6"
   )
 
-  if(profileData %>% filter(var %in% experimentTreatmentVarSet) %>% nrow() > 0) {
+  if (profileData %>% filter(var %in% experimentTreatmentVarSet) %>% nrow() > 0) {
 
     googleDirData <- lapply(googleDirData,
-                            add_exp_trt_levels,
-                            profileData = profileData,
-                            experimentTreatmentVarSet = experimentTreatmentVarSet)
+      add_exp_trt_levels,
+      profileData = profileData,
+      experimentTreatmentVarSet = experimentTreatmentVarSet)
 
   }
 
@@ -504,16 +499,16 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
       if (!is.null(googleDirData[[i]][[dataCol]])) {
 
-        googleDirData[[i]][[dataCol]] <- googleDirData[[i]][[dataCol]] * PDU_UCP[PDU_UCP$var == dataCol,][['unitConversionFactor']]
+        googleDirData[[i]][[dataCol]] <- googleDirData[[i]][[dataCol]] * PDU_UCP[PDU_UCP$var == dataCol, ][["unitConversionFactor"]]
 
         conversionNotes <- conversionNotes %>%
-          add_row(source = 'profile',
+          add_row(source = "profile",
                   var = dataCol,
-                  Var_long = PDU_UCP[PDU_UCP$var == dataCol,]$Var_long.PD,
-                  given_unit = PDU_UCP[PDU_UCP$var == dataCol,]$givenUnit,
-                  target_unit = PDU_UCP[PDU_UCP$var == dataCol,]$unit_levels,
-                  unit_conversion_factor = PDU_UCP[PDU_UCP$var == dataCol,]$unitConversionFactor,
-                  varNotes = 'converted'
+                  Var_long = PDU_UCP[PDU_UCP$var == dataCol, ]$Var_long.PD,
+                  given_unit = PDU_UCP[PDU_UCP$var == dataCol, ]$givenUnit,
+                  target_unit = PDU_UCP[PDU_UCP$var == dataCol, ]$unit_levels,
+                  unit_conversion_factor = PDU_UCP[PDU_UCP$var == dataCol, ]$unitConversionFactor,
+                  varNotes = "converted"
           )
 
 
@@ -529,7 +524,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # profile data QC ---------------------------------------------------------
 
-  # isolate profile data vars where a range to check has been identified by Will and Derek
+  # isolate profile data vars where a range to check has been identified by
+  # Will and Derek
   profileRanges <- profileQC %>%
     filter(!is.na(minValue)) %>%
     pull(var)
@@ -549,12 +545,12 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
             select(one_of(profileRanges)) %>%
             summarise_all(funs(max), na.rm = TRUE) %>%
             gather(key = "var", value = "max"),
-          by = c('var')
+          by = c("var")
         ) %>%
         inner_join(
           profileQC %>%
             select(var, minValue, maxValue),
-          by = c('var')
+          by = c("var")
         ) %>%
         mutate(
           min = as.numeric(min),
@@ -577,7 +573,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # vector of all possible numeric vectors from QC template
   numericProfileVars <- profileQC %>%
-    filter(class == 'numeric') %>%
+    filter(class == "numeric") %>%
     pull(var)
 
   profile_type_check <- function(frame) {
@@ -607,7 +603,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
     profile_QC_report <- profile_QC_report  %>%
       mutate(
         dataset = directoryName,
-        source = 'profile'
+        source = "profile"
       ) %>%
       select(dataset, source, var, error, min, min_allowed = minValue, max, max_allowed = maxValue)
 
@@ -642,11 +638,11 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # attrs.
   for (i in 1:length(googleDirData)) if (is.null(attributes(googleDirData[[i]]))) {
 
-    attributes(googleDirData[[i]]) <- list(ref=names(googleDirData)[i])
+    attributes(googleDirData[[i]]) <- list(ref = names(googleDirData)[i])
 
   } else {
 
-    attributes(googleDirData[[i]]) <- c(attributes(googleDirData[[i]]), ref=names(googleDirData)[i])
+    attributes(googleDirData[[i]]) <- c(attributes(googleDirData[[i]]), ref = names(googleDirData)[i])
 
   }
 
@@ -694,13 +690,13 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
     warning("some units not standaridized, see NOTES file")
 
-    if (nrow(locationVarsNotConverted) > 0 ) {
+    if (nrow(locationVarsNotConverted) > 0) {
 
       print(locationVarsNotConverted)
 
     }
 
-    if (nrow(profileVarsNotConverted) > 0 ) {
+    if (nrow(profileVarsNotConverted) > 0) {
 
       print(profileVarsNotConverted)
 

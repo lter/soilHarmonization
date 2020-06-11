@@ -75,7 +75,6 @@
 #'   the update utility
 #'
 #' @import googledrive
-#' @import googlesheets
 #' @import openxlsx
 #' @import tools
 #' @import purrr

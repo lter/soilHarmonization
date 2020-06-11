@@ -8,33 +8,37 @@
 #'   downloading Google Sheets via a apply or map call but can be used
 #'   independently.
 #'
-#' @param fileName name of the Google Sheet to import
+#' @param fileId Sheet ID or URL of Google Sheet to import
 #' @param skipRows number of rows to skip when importing (optional; default:0)
 #' @param missingValueCode string to denote missing values (optional;
-#'   default:'NA')
+#'   default:"NA")
 #'
-#' @importFrom googlesheets gs_title
-#' @importFrom googlesheets gs_read
+#' @importFrom googlesheets4 read_sheet
 #'
 #' @return R object of type tibble
 #'
 #' @export
 #'
 
-sheet_download <- function(fileName, skipRows, missingValueCode) {
+sheet_download <- function(fileId, skipRows, missingValueCode) {
 
   if (missing(skipRows)) {
+
     skipRows <- 0
+
   }
 
   if (missing(missingValueCode)) {
+
     missingValueCode <- "NA"
+
   }
 
-  token <- googlesheets::gs_title(fileName)
+  dataFile <- googlesheets4::read_sheet(
+    ss = fileId,
+    skip = skipRows,
+    na = missingValueCode)
 
-  dataFile <- googlesheets::gs_read(token,
-                                    skip = skipRows,
-                                    na = missingValueCode)
+  return(dataFile)
 
 }
