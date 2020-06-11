@@ -32,26 +32,31 @@
 #'   package so that it is not loaded (per
 #'   https://stackoverflow.com/questions/13182634/rbuildignore-and-excluding-directories)
 #'
+#' @note Data are read from LTER-SOM-keyfile/units_translation_table#'
+#' @note New names are read from LTER-SOM-keyfile/KeyV2_newVarNames#'
 #'
 #' @import googledrive
-#' @import googlesheets
 #' @import tidyverse
+#' @importFrom googlesheets4 read_sheet
 #'
 #' @return A tibble (then rda saved to the data directory) of variables and
 #'   appropriate conversion values from provided to target values.
 
-library(googlesheets)
+library(googlesheets4)
 library(googledrive)
 library(tidyverse)
 
 options(scipen = 999)
 
-unitsConversionToken <- googlesheets::gs_title("units_translation_table")
-newConversionLocation <- gs_read(unitsConversionToken, ws = "Location_data")
-newConversionProfile <- gs_read(unitsConversionToken, ws = "Profile_data (Key-Key)")
+newConversionLocation <- googlesheets4::read_sheet(
+  "https://docs.google.com/spreadsheets/d/1NKCZu0wguoFg9ZTwKpWzYwWqKl_Ppal7k8zqGb8fk3Y/edit?usp=sharing",
+  sheet = "Location_data")
 
-newNamesToken <- googlesheets::gs_title("KeyV2_newVarNames")
-newNames <- gs_read(newNamesToken)
+newConversionProfile <- googlesheets4::read_sheet(
+  "https://docs.google.com/spreadsheets/d/1NKCZu0wguoFg9ZTwKpWzYwWqKl_Ppal7k8zqGb8fk3Y/edit?usp=sharing",
+  sheet = "Profile_data (Key-Key)")
+
+newNames <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1HnM1wSguzFe7HEBMsOYrB2vyjs7RTRpfRaI4RxnLdsA/edit?usp=sharing")
 
 unitsConversions <- bind_rows(
   newConversionLocation %>%
@@ -60,7 +65,7 @@ unitsConversions <- bind_rows(
       !is.na(var_new_name) ~ var_new_name,
       TRUE ~ var
     )) %>%
-    select(unit_levels = Unit,Var_long,var,givenUnit,unitConversionFactor) %>%
+    select(unit_levels = Unit, Var_long, var, givenUnit, unitConversionFactor) %>%
     filter(!is.na(unit_levels)),
   newConversionProfile %>%
     left_join(newNames %>% select(-Var_long), by = c("var" = "var_old_name")) %>%
@@ -72,7 +77,7 @@ unitsConversions <- bind_rows(
       !grepl("fraction|profile", Level),
       !is.na(unitConversionFactor)
     ) %>%
-    select(unit_levels,Var_long,var,givenUnit,unitConversionFactor)
+    select(unit_levels, Var_long, var, givenUnit, unitConversionFactor)
 )
 
-save(unitsConversions, file="data/unitsConversions.rda")
+save(unitsConversions, file = "data/unitsConversions.rda")

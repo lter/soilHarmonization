@@ -4,15 +4,15 @@
 \alias{sheet_download}
 \title{Import a Google Sheet}
 \usage{
-sheet_download(fileName, skipRows, missingValueCode)
+sheet_download(fileId, skipRows, missingValueCode)
 }
 \arguments{
-\item{fileName}{name of the Google Sheet to import}
+\item{fileId}{Sheet ID or URL of Google Sheet to import}
 
 \item{skipRows}{number of rows to skip when importing (optional; default:0)}
 
 \item{missingValueCode}{string to denote missing values (optional;
-default:'NA')}
+default:"NA")}
 }
 \value{
 R object of type tibble
