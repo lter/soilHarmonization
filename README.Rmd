@@ -47,10 +47,11 @@ metadata.
 
 ### navigation
 
-- [installation](soilHarmonization#installation)
-- [data-homogenization](soilHarmonization#data-homogenization)
-- [homogenization-QC](soilHarmonization#homogenization-QC)
-- [keyfile-upversion](soilHarmonization#keyfile-upversion)
+- [installation](https://github.com/lter/soilHarmonization#installation)
+- [data-homogenization](https://github.com/lter/soilHarmonization#data-homogenization)
+- [homogenization-QC](https://github.com/lter/soilHarmonization#homogenization-qc)
+- [keyfile-upversion](https://github.com/lter/soilHarmonization#keyfile-upversion)
+- [acknowledgements](https://github.com/lter/soilHarmonization#acknowledgements)
 
 
 ### installation
@@ -261,12 +262,12 @@ tibble(
   timestamp = as.POSIXct(NA)
 ) %>%
 write_csv(path = 'path/filename.csv', append = FALSE)
+```
 
-
-### Acknowledgments
+### acknowledgements
 
 * National Science Foundation under grant number DEB-1832016, Central
-  Arizona–Phoenix Long-Term Ecological Research Program (CAP LTER)
-* Soil Organic Matter Synthesis Group supported through the Long Term
-  Ecological Research Network Office (LNO) (NSF award numbers 1545288 and
-  1929393) and the National Center for Ecological Analysis and Synthesis (UCSB)
+Arizona–Phoenix Long-Term Ecological Research Program (CAP LTER)
+* Soil Organic Matter Synthesis Group supported through the Long Term Ecological
+Research Network Office (LNO) (NSF award numbers 1545288 and 1929393) and the
+National Center for Ecological Analysis and Synthesis (UCSB)

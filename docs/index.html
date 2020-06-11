@@ -87,10 +87,11 @@
 <h3 class="hasAnchor">
 <a href="#navigation" class="anchor"></a>navigation</h3>
 <ul>
-<li><a href="soilHarmonization#installation">installation</a></li>
-<li><a href="soilHarmonization#data-homogenization">data-homogenization</a></li>
-<li><a href="soilHarmonization#homogenization-QC">homogenization-QC</a></li>
-<li><a href="soilHarmonization#keyfile-upversion">keyfile-upversion</a></li>
+<li><a href="https://github.com/lter/soilHarmonization#installation">installation</a></li>
+<li><a href="https://github.com/lter/soilHarmonization#data-homogenization">data-homogenization</a></li>
+<li><a href="https://github.com/lter/soilHarmonization#homogenization-qc">homogenization-QC</a></li>
+<li><a href="https://github.com/lter/soilHarmonization#keyfile-upversion">keyfile-upversion</a></li>
+<li><a href="https://github.com/lter/soilHarmonization#acknowledgements">acknowledgements</a></li>
 </ul>
 </div>
 <div id="installation" class="section level3">
@@ -173,21 +174,20 @@
               <span class="kw">keyFileUploadPath</span> <span class="kw">=</span> <span class="st">'~/Desktop/somdev/key_file_upload/'</span>,
               <span class="kw">keyFileUpdateLogPath</span> <span class="kw">=</span> <span class="st">'~/Desktop/keyUpdateLogFile.csv'</span> )</pre></div>
 <p>If writing to a log file, required column names include: keyFileName, keyFileDirectory, and timestamp. Following is an example of how to create a empty log file. Pass the path to the <code>keyFileUpdateLogPath</code> parameter in the key_update_v2 function.</p>
-<div class="sourceCode" id="cb7"><pre class="r">tibble(
-  keyFileName = as.character(NA),
-  keyFileDirectory = as.character(NA),
-  timestamp = as.POSIXct(NA)
-) %&gt;%
-write_csv(path = 'path/filename.csv', append = FALSE)
-
-
-### Acknowledgments
-
-* National Science Foundation under grant number DEB-1832016, Central
-  Arizona–Phoenix Long-Term Ecological Research Program (CAP LTER)
-* Soil Organic Matter Synthesis Group supported through the Long Term
-  Ecological Research Network Office (LNO) (NSF award numbers 1545288 and
-  1929393) and the National Center for Ecological Analysis and Synthesis (UCSB)</pre></div>
+<div class="sourceCode" id="cb7"><pre class="r"><span class="fu">tibble</span>(
+  <span class="kw">keyFileName</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(<span class="fl">NA</span>),
+  <span class="kw">keyFileDirectory</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(<span class="fl">NA</span>),
+  <span class="kw">timestamp</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html">as.POSIXct</a></span>(<span class="fl">NA</span>)
+) <span class="kw">%&gt;%</span>
+<span class="fu">write_csv</span>(<span class="kw">path</span> <span class="kw">=</span> <span class="st">'path/filename.csv'</span>, <span class="kw">append</span> <span class="kw">=</span> <span class="fl">FALSE</span>)</pre></div>
+</div>
+<div id="acknowledgements" class="section level3">
+<h3 class="hasAnchor">
+<a href="#acknowledgements" class="anchor"></a>acknowledgements</h3>
+<ul>
+<li>National Science Foundation under grant number DEB-1832016, Central Arizona–Phoenix Long-Term Ecological Research Program (CAP LTER)</li>
+<li>Soil Organic Matter Synthesis Group supported through the Long Term Ecological Research Network Office (LNO) (NSF award numbers 1545288 and 1929393) and the National Center for Ecological Analysis and Synthesis (UCSB)</li>
+</ul>
 </div>
 </div>
   </div>
