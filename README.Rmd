@@ -12,10 +12,10 @@ about data) for the LTER Soil Organic Matter (SOM) Working Group synthesis
 effort. This working group is examining SOM and other soil-related variables to
 evaluate competing theories that underlie models of soil dynamics.
 
-Data provided by working group particants and other data sources are aggregated
-into a project Google Drive. Though all related to soils, these data vary
-vastly in their structure, units of measure, granularity and other details. To
-faciliate their use in models, the data must be homogenized to a sufficient
+Data provided by working group participants and other data sources are
+aggregated into a project Google Drive. Though all related to soils, these data
+vary vastly in their structure, units of measure, granularity and other details.
+To facilitate their use in models, the data must be homogenized to a sufficient
 degree such that cross-site, -project, -time comparisons are feasible.
 
 To facilitate data harmonization, data providers are tasked with generating a
@@ -55,7 +55,8 @@ metadata.
 
 ### installation
 
-Install the current version from GitHub (after installing the `devtools` package from CRAN):
+Install the current version from GitHub (after installing the `devtools` package
+from CRAN):
 
 ```{r load package, eval=FALSE}
 
@@ -101,7 +102,7 @@ data_homogenization(directoryName = URL-of-Google-Directory,
 
 ### homogenization-QC
 
-**The QC functionality has been incorporaed into the homogenization process. As
+**The QC functionality has been incorporated into the homogenization process. As
 such, homogenization-QC has been archived with the following details retained
 only for documentation.**
 
@@ -262,11 +263,10 @@ tibble(
 write_csv(path = 'path/filename.csv', append = FALSE)
 
 
-### Acknowledgements
+### Acknowledgments
 
 * National Science Foundation under grant number DEB-1832016, Central
   Arizona–Phoenix Long-Term Ecological Research Program (CAP LTER)
 * Soil Organic Matter Synthesis Group supported through the Long Term
   Ecological Research Network Office (LNO) (NSF award numbers 1545288 and
-    1929393) and the National Center for Ecological Analysis and Synthesis,
-UCSB
+  1929393) and the National Center for Ecological Analysis and Synthesis (UCSB)

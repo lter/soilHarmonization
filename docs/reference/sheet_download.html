@@ -116,14 +116,14 @@ Sheet into an R object with with optional parameters for rows to skip and a
 missing value code upon import.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sheet_download</span>(<span class='no'>fileName</span>, <span class='no'>skipRows</span>, <span class='no'>missingValueCode</span>)</pre>
+    <pre class="usage"><span class='fu'>sheet_download</span>(<span class='no'>fileId</span>, <span class='no'>skipRows</span>, <span class='no'>missingValueCode</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fileName</th>
-      <td><p>name of the Google Sheet to import</p></td>
+      <th>fileId</th>
+      <td><p>Sheet ID or URL of Google Sheet to import</p></td>
     </tr>
     <tr>
       <th>skipRows</th>
@@ -132,7 +132,7 @@ missing value code upon import.</p>
     <tr>
       <th>missingValueCode</th>
       <td><p>string to denote missing values (optional;
-default:'NA')</p></td>
+default:"NA")</p></td>
     </tr>
     </table>
 
