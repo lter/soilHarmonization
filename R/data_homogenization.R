@@ -117,7 +117,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # access and process key file ---------------------------------------------
 
   # Update 2018-12-28: data_harmonization requires a key file version 2
-  if (!any(grepl("KEY_V2", dirFileNames, ignore.case = F))) {
+  if (!any(grepl("KEY_RC", dirFileNames, ignore.case = F))) {
 
     stop("data_harmonization requires a key file version RC")
 
