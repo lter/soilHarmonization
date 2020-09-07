@@ -119,12 +119,12 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # Update 2018-12-28: data_harmonization requires a key file version 2
   if (!any(grepl("KEY_V2", dirFileNames, ignore.case = F))) {
 
-    stop("data_harmonization requires a key file version 2")
+    stop("data_harmonization requires a key file version RC")
 
   }
 
   # isolate key file, and extract details in location and profile tabs
-  keyFileName <- grep("KEY_V2", dirFileNames, ignore.case = F, value = T)
+  keyFileName <- grep("KEY_RC", dirFileNames, ignore.case = F, value = T)
   keyFileToken <- dirFileList[dirFileList$name == keyFileName, ]$id
 
   # extract location and profile tabs of key file
