@@ -497,11 +497,10 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
     for (dataCol in c(PDU_UCP$var)) {
       
-      print(dataCol)  ###DEBUG FOR NEW KEY VAR
 
       if (!is.null(googleDirData[[i]][[dataCol]])) {
         
-        
+        print(dataCol)  ###DEBUG FOR NEW KEY VAR
         print(googleDirData[[i]][[dataCol]])  ###DEBUG FOR NEW KEY VAR
         print(PDU_UCP[PDU_UCP$var == dataCol, ][["unitConversionFactor"]])  ###DEBUG FOR NEW KEY VAR
         
