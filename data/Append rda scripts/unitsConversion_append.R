@@ -6,9 +6,9 @@ setwd('C:/github/RCsoilHarmonization/data')
 
 load("unitsConversions.rda")
 
-new_units <- unitsConversions %>% filter(var == "n_min") %>% 
-                                  mutate(var = "n_min_pot") %>%
-                                  mutate(Var_long = "Net N mineralization at water holding capacity")
+new_units <- unitsConversions %>% filter(var == "lyr_c_tot") %>% 
+                                  mutate(var = "grav_water_content") %>%
+                                  mutate(Var_long = "Gravimetric water content")
 
 unitsConversions <- unitsConversions %>% add_row(new_units)
 
