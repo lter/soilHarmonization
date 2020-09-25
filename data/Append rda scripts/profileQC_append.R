@@ -23,12 +23,17 @@ profileQC <- profileQC %>% add_row(minValue = 0,
 
 
 #Option 2: Copy and modify
-row_to_add <- profileQC %>% filter(var == "n_min") %>%
-                            mutate(var = "n_min_pot") %>%
-                            mutate(Var_long = "Net N mineralization at water holding capacity")
+row_to_add <- profileQC %>% filter(var == "bd_tot") %>%
+                            mutate(var = "bd_tot_mdl") %>%
+                            mutate(Var_long = "Bulk Density modeled, With Coarse Fragments") %>%
+                            mutate(Level = "profile") %>%
+                            mutate(minValue = -30) %>%
+                            mutate(maxValue = 40) %>%
+                            mutate(unit_levels = NA) %>%
+                            mutate(givenUnit = "degC") %>%
+                            mutate(hardUnit = "degC") 
 
 profileQC <- profileQC %>% add_row(row_to_add)
-
 
 #Save changes  
 save(profileQC, file = "profileQC.rda")
@@ -38,3 +43,5 @@ save(profileQC, file = "profileQC.rda")
 #load("profileQC.rda")
 #tail(profileQC, 3)
 
+colnames(profileQC)
+colnames(locationQC)

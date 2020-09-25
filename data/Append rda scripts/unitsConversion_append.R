@@ -6,9 +6,9 @@ setwd('C:/github/RCsoilHarmonization/data')
 
 load("unitsConversions.rda")
 
-new_units <- unitsConversions %>% filter(var == "lyr_c_tot") %>% 
-                                  mutate(var = "grav_water_content") %>%
-                                  mutate(Var_long = "Gravimetric water content")
+new_units <- unitsConversions %>% filter(var == "bd_tot") %>% 
+                                  mutate(var = "bd_tot_mdl") %>%
+                                  mutate(Var_long = "Bulk Density modeled, With Coarse Fragments")
 
 unitsConversions <- unitsConversions %>% add_row(new_units)
 

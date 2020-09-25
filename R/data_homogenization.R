@@ -412,7 +412,8 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
     mvc2 = locationData[locationData$var == "NA_2",]$Value }
 
-  missingValueCode = "NA"
+  #missingValueCode = "NA"
+  missingValueCode = NA  #DEBUG
   if (exists("mvc1")) { missingValueCode = mvc1 }
   if (exists("mvc2")) { missingValueCode = mvc2 }
   if (exists("mvc1") && exists("mvc2")) { missingValueCode = c(mvc1, mvc2) }
@@ -492,15 +493,20 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
       unitConversionFactor != 1
     )
 
+  # Convert character NA to NA
+  #PDU_UCP <- PDU_UCP %>% na_if("NA")
+  
   # loop through all data frames in google dir
   for (i in 1:length(googleDirData)) {
 
     for (dataCol in c(PDU_UCP$var)) {
       
-
       if (!is.null(googleDirData[[i]][[dataCol]])) {
+      
+        #print(str(as.numeric(googleDirData[[i]][[dataCol]])))  #DEBUG
         
-        googleDirData[[i]][[dataCol]] <- googleDirData[[i]][[dataCol]] * PDU_UCP[PDU_UCP$var == dataCol, ][["unitConversionFactor"]]
+        #added as.numeric conversion
+        googleDirData[[i]][[dataCol]] <- as.numeric(googleDirData[[i]][[dataCol]]) * PDU_UCP[PDU_UCP$var == dataCol, ][["unitConversionFactor"]]
 
         conversionNotes <- conversionNotes %>%
           add_row(source = "profile",

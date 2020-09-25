@@ -37,8 +37,11 @@ sheet_download <- function(fileId, skipRows, missingValueCode) {
   dataFile <- googlesheets4::read_sheet(
     ss = fileId,
     skip = skipRows,
-    na = missingValueCode)
-
-  return(dataFile)
+    na = missingValueCode,
+    col_types = "c")
+  
+  output_df <- map_dfc(.x = dataFile, .f = ~type.convert(.x, as.is=T))
+  
+  return(output_df)
 
 }

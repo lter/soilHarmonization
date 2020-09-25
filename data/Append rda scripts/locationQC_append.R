@@ -7,13 +7,13 @@ setwd('C:/github/RCsoilHarmonization/data')
 load("locationQC.rda")
 
 locationQC <- locationQC %>% add_row(minValue = 0, 
-                                     maxValue = 100,
-                                     Unit = "m",
-                                     Var_long = "This is a RC test var",
-                                     var = "test",
+                                     maxValue = 10,
+                                     Unit = "mm",
+                                     Var_long = "Coarse Fraction Size Threshold Used",
+                                     var = "coarse_tot",
                                      Level = "location",
-                                     givenUnit = "m",
-                                     class = "character",
+                                     givenUnit = "mm",
+                                     class = "numeric",
                                      definition = NA,
                                      authority = NA
 )
