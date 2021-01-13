@@ -15,7 +15,7 @@ Data provided by working group participants and other data sources are
 aggregated into a project Google Drive. Though all related to soils,
 these data vary vastly in their structure, units of measure, granularity
 and other details. To facilitate their use in models, the data must be
-homogenized to a sufficient degree such that cross-site, -project, -time
+harmonized to a sufficient degree such that cross-site, -project, -time
 comparisons are feasible.
 
 To facilitate data harmonization, data providers are tasked with
@@ -49,8 +49,8 @@ metadata.
 ### navigation
 
   - [installation](https://github.com/lter/soilHarmonization#installation)
-  - [data-homogenization](https://github.com/lter/soilHarmonization#data-homogenization)
-  - [homogenization-QC](https://github.com/lter/soilHarmonization#homogenization-qc)
+  - [data-harmonization](https://github.com/lter/soilHarmonization#data-harmonization)
+  - [harmonization-QC](https://github.com/lter/soilHarmonization#harmonization-qc)
   - [keyfile-upversion](https://github.com/lter/soilHarmonization#keyfile-upversion)
   - [acknowledgements](https://github.com/lter/soilHarmonization#acknowledgements)
 
@@ -68,9 +68,9 @@ must be installed on the machine that will be running the script
 independently of R. The [LaTeX project](https://www.latex-project.org/)
 is a good resource for installing LaTeX.
 
-### data-homogenization
+### data-harmonization
 
-The `data_homogenization` script takes two input parameters:
+The `data_harmonization` script takes two input parameters:
 `directoryName` and `temporaryDirectory`. `directoryName` is the URL of
 the target Google Drive directory where the data and key file are
 located. Note that you must have read + write access to the target
@@ -93,33 +93,33 @@ Special notes about the `temporarydirectory`:
     but the script will delete any content so be sure to move or back up
     files in the `temporaryDirectory` that you wish to save
 
-**running the homogenization function, example:**
+**running the harmonization function, example:**
 
 ``` r
-data_homogenization(directoryName = URL-of-Google-Directory, 
+data_harmonization(directoryName = URL-of-Google-Directory, 
                     temporaryDirectory = '~/path/luq_homogenized')
 ```
 
-### homogenization-QC
+### harmonization-QC
 
-**The QC functionality has been incorporated into the homogenization
-process. As such, homogenization-QC has been archived with the following
+**The QC functionality has been incorporated into the harmonization
+process. As such, harmonization-QC has been archived with the following
 details retained only for documentation.**
 
-Revised versions of the `data-homogenization` function feature
-quality-control checks. As a result, the `homogenization_QC` function is
+Revised versions of the `data-harmonization` function feature
+quality-control checks. As a result, the `harmonization_QC` function is
 available but largely unnecessary.
 
-Following successful application of the `data_homogenization` script, a
-quality-control function (`homogenization_QC`) may be used to assess
-some aspects of the data homogeniztion process. `homogenization_QC`
-performs three Q-C checks: (1) reports the number of rows in the
-provided data file(s) and homogenized data file(s); (2) evalutes whether
-all location data provided in the key file were successfully
-incorporated into the homogenized data files(s); and (3) confirms that
-all profile-level variables entered into the key file were included in
-the homogenized data with a summary of those variables. In addition, the
-script generates plots all treatment and experimental (i.e., considered
+Following successful application of the `data_harmonization` script, a
+quality-control function (`harmonization_QC`) may be used to assess some
+aspects of the data homogeniztion process. `harmonization_QC` performs
+three Q-C checks: (1) reports the number of rows in the provided data
+file(s) and homogenized data file(s); (2) evalutes whether all location
+data provided in the key file were successfully incorporated into the
+homogenized data files(s); and (3) confirms that all profile-level
+variables entered into the key file were included in the homogenized
+data with a summary of those variables. In addition, the script
+generates plots all treatment and experimental (i.e., considered
 independent) variables identified in the key file against all dependent
 variables identified in the key file. Box plots are generated when the
 independent variable is categorical whereas scatter plots are generated
@@ -128,7 +128,7 @@ plots are to provide only a general, visual assessment and comparison of
 the data provided for error-checking purposes, and are not intended to
 be exhaustive or of publication quality.
 
-As with the `data_homogenization` script, `homogenization_QC` takes two
+As with the `data_harmonization` script, `harmonization_QC` takes two
 input parameters: `directoryName` and `temporaryDirectory`.
 `directoryName` is the quoted the name of the target Google Drive
 directory where the data, key file, and now homogenized data and notes
@@ -157,7 +157,7 @@ Special notes about the `temporarydirectory`:
 **running the quality-control function, example:**
 
 ``` r
-homogenization_QC(directoryName = 'Luquillo elevation gradient', 
+harmonization_QC(directoryName = 'Luquillo elevation gradient', 
                   temporaryDirectory = '~/Desktop/luq_homogenized')
 ```
 

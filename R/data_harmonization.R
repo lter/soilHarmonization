@@ -1,15 +1,15 @@
-#' @title Homogenize LTER Soil Organic Matter Working Group data and notes
+#' @title Harmonize LTER Soil Organic Matter Working Group data and notes
 #'
-#' @description The function data_homogonization imports data and a key
+#' @description The function data_harmonization imports data and a key
 #'   translation file from a Google Directory that the user is able to access.
-#'   Data are homogenized to feature common header names and units, and
+#'   Data are harmonized to feature common header names and units, and
 #'   dataset-level notes appended to each data file. Output includes
 #'   standardized data and notes to a local directory on the user's computer
 #'   that are also uploaded to the Google Directory identified by the user as
 #'   containing the source data and key translation file. Modified data are
 #'   appeneded with the string "HMGZD".
 #'
-#' @note data_homogonization relies on the helper function sheet_download.
+#' @note data_harmonization relies on the helper function sheet_download.
 #'
 #' @param directoryName The URL of the Google Drive directory containing data
 #'   and a key translation file
@@ -29,20 +29,20 @@
 #' @importFrom purrr map_df
 #' @import pander
 #'
-#' @return Homogenized data and notes in a local directory identified by the
+#' @return Harmonized data and notes in a local directory identified by the
 #'   user, and uploaded to the Google Drive source directory.
 #'
 #' @examples
 #' \dontrun{
 #'
-#'  data_homogonization(directoryName = 'CDR_E120',
+#'  data_harmonization(directoryName = 'CDR_E120',
 #'                      temporaryDirectory = '~/Desktop/CRD_E120_output/')
 #'
 #' }
 #'
 #' @export
 
-data_homogenization <- function(directoryName, temporaryDirectory) {
+data_harmonization <- function(directoryName, temporaryDirectory) {
 
 
   # check for required input to function ------------------------------------
@@ -656,7 +656,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
   # store names of data files before processing
   oeDataNames <- names(googleDirData)
 
-  # rename files to include base name + indication of homogenization
+  # rename files to include base name + indication of harmonization
   names(googleDirData) <- paste0(stringr::str_extract(names(googleDirData), "^[^\\.]*"), "_HMGZD")
 
 
@@ -706,7 +706,7 @@ data_homogenization <- function(directoryName, temporaryDirectory) {
 
   # generate and upload QC report -------------------------------------------
 
-  rmarkdown::render(input = system.file("homogenization_notes.Rmd", package = "soilHarmonization"),
+  rmarkdown::render(input = system.file("harmonization_notes.Rmd", package = "soilHarmonization"),
                     params = list(
                       param_directory = directoryName,
                       param_namesOE = sort(oeDataNames),
